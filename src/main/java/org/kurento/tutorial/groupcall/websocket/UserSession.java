@@ -22,10 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.kurento.client.Continuation;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.WebRtcEndpoint;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,7 +141,7 @@ public class UserSession implements Closeable {
         }
 
         log.debug("PARTICIPANT {}: obtained endpoint for {}", this.name, sender.getName());
-        sender.getOutgoingWebRtcPeer().connect(incoming);
+        sender.getOutgoingWebRtcPeer().connect(incoming, MediaType.AUDIO);
 
         return incoming;
     }
