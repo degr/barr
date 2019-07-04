@@ -61,12 +61,11 @@ function register() {
     document.getElementById('join').style.display = 'none';
     document.getElementById('room').style.display = 'block';
 
-    var message = {
+    sendMessage({
         id : 'joinRoom',
         name : name,
-        room : room,
-    }
-    sendMessage(message);
+        room : room
+    });
 }
 
 function onNewParticipant(request) {
@@ -93,13 +92,13 @@ function callResponse(message) {
 function onExistingParticipants(msg) {
     var constraints = {
         audio : true,
-        video : {
+        video : false/*{
             mandatory : {
                 maxWidth : 320,
                 maxFrameRate : 15,
                 minFrameRate : 15
             }
-        }
+        }*/
     };
     console.log(name + " registered in room " + room);
     var participant = new Participant(name);
@@ -148,6 +147,16 @@ function receiveVideo(sender) {
 
     var options = {
         remoteVideo: video,
+        mediaConstraints: {
+            audio : true,
+            video : false/*{
+            mandatory : {
+                maxWidth : 320,
+                maxFrameRate : 15,
+                minFrameRate : 15
+            }
+        }*/
+        },
         configuration: {
             iceServers: [{urls: 'turn:134.209.199.255', username: 'test', credential: 'test'}],
             iceTransportPolicy: 'relay'

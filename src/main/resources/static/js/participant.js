@@ -33,7 +33,7 @@ function Participant(name) {
     container.id = name;
     var span = document.createElement('span');
     var video = document.createElement('video');
-    var rtcPeer;
+    this.rtcPeer = null;
 
     container.appendChild(video);
     container.appendChild(span);
@@ -46,14 +46,9 @@ function Participant(name) {
     video.autoplay = true;
     video.controls = false;
 
-
-    this.getElement = function() {
-        return container;
-    }
-
     this.getVideoElement = function() {
         return video;
-    }
+    };
 
     function switchContainerClass() {
         if (container.className === PARTICIPANT_CLASS) {
@@ -69,21 +64,21 @@ function Participant(name) {
     }
 
     function isPresentMainParticipant() {
-        return ((document.getElementsByClassName(PARTICIPANT_MAIN_CLASS)).length != 0);
+        return !!(document.getElementsByClassName(PARTICIPANT_MAIN_CLASS)).length;
     }
 
-    this.offerToReceiveVideo = function(error, offerSdp, wp){
-        if (error) return console.error ("sdp offer error")
+    this.offerToReceiveVideo = function(error, offerSdp){
+        if (error) return console.error ("sdp offer error");
         console.log('Invoking SDP offer callback function');
         var msg =  { id : "receiveVideoFrom",
             sender : name,
             sdpOffer : offerSdp
         };
         sendMessage(msg);
-    }
+    };
 
 
-    this.onIceCandidate = function (candidate, wp) {
+    this.onIceCandidate = function (candidate) {
         console.log("Local candidate" + JSON.stringify(candidate));
 
         var message = {
@@ -92,7 +87,7 @@ function Participant(name) {
             name: name
         };
         sendMessage(message);
-    }
+    };
 
     Object.defineProperty(this, 'rtcPeer', { writable: true});
 
