@@ -17,11 +17,7 @@
 
 package org.kurento.tutorial.groupcall.websocket;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
+import com.google.gson.JsonObject;
 import org.kurento.client.Continuation;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.MediaPipeline;
@@ -32,7 +28,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.google.gson.JsonObject;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)
@@ -49,16 +49,17 @@ public class UserSession implements Closeable {
 
     private final String roomName;
     private final WebRtcEndpoint outgoingMedia;
-    private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
+    private final Map<String, WebRtcEndpoint> incomingMedia;
+    private ReentrantLock lock = new ReentrantLock();
 
     UserSession(final String name, String roomName, final WebSocketSession session,
                 MediaPipeline pipeline) {
-
         this.pipeline = pipeline;
         this.name = name;
         this.session = session;
         this.roomName = roomName;
         this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
+        incomingMedia = new ConcurrentHashMap<>();
 
         this.outgoingMedia.addIceCandidateFoundListener(event -> {
             JsonObject response = new JsonObject();
@@ -66,9 +67,9 @@ public class UserSession implements Closeable {
             response.addProperty("name", name);
             response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
             try {
-                synchronized (session) {
-                    session.sendMessage(new TextMessage(response.toString()));
-                }
+                lock.lock();
+                session.sendMessage(new TextMessage(response.toString()));
+                lock.unlock();
             } catch (IOException e) {
                 log.debug(e.getMessage());
             }

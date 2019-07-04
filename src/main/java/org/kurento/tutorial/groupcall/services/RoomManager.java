@@ -14,20 +14,18 @@
  * limitations under the License.
  *
  */
-
 package org.kurento.tutorial.groupcall.services;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
 import org.kurento.tutorial.groupcall.websocket.Room;
 
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 public class RoomManager {
-
     private KurentoClient kurento;
 
     public RoomManager(KurentoClient kurento) {
@@ -38,13 +36,13 @@ public class RoomManager {
 
     public Room getRoom(String roomName) {
         log.debug("Searching for room {}", roomName);
-        Room room = rooms.get(roomName);
-
-        if (room == null) {
-            log.debug("Room {} not existent. Will create now!", roomName);
-            room = new Room(roomName, kurento.createMediaPipeline());
-            rooms.put(roomName, room);
-        }
+        Room room = Optional.ofNullable(rooms.get(roomName)).orElseGet(
+                () -> {
+                    log.debug("Room {} not existent. Will create now!", roomName);
+                    Room room1 = new Room(roomName, kurento.createMediaPipeline());
+                    rooms.put(roomName, room1);
+                    return room1;
+                });
         log.debug("Room {} found!", roomName);
         return room;
     }
@@ -54,5 +52,4 @@ public class RoomManager {
         room.close();
         log.info("Room {} removed and closed", room.getName());
     }
-
 }

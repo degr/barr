@@ -21,6 +21,9 @@
     <!-- Project configuration -->
 
     <properties>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
+
         <demo.port>8443</demo.port>
         <version.kurento-datachannelexample>6.6.0</version.kurento-datachannelexample>
         <start-class>org.kurento.tutorial.groupcall.GroupCallApp</start-class>
@@ -80,6 +83,7 @@
             <artifactId>kurento-utils-js</artifactId>
         </dependency>
 
+
     </dependencies>
 
     <dependencyManagement>
@@ -97,6 +101,14 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
+                </configuration>
             </plugin>
         </plugins>
 
@@ -155,7 +167,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <configuration>
-                            <descriptor>src/assembly/bin.xml</descriptor>
+                            <descriptors>
+                                <descriptor>src/assembly/bin.xml</descriptor>
+                            </descriptors>
                             <finalName>${project.artifactId}-${project.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>

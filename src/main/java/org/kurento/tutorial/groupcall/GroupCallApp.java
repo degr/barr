@@ -11,11 +11,9 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-
 @SpringBootApplication
 @EnableWebSocket
 public class GroupCallApp implements WebSocketConfigurer {
-
     @Bean
     public UserRegistry registry() {
         return new UserRegistry();
@@ -43,12 +41,8 @@ public class GroupCallApp implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(
-                groupCallHandler(
-                        roomManager(kurentoClient()),
-                        registry()
-                ),
-                "/groupcall"
-        );
+        registry.addHandler(groupCallHandler(roomManager(kurentoClient()),
+                registry()),
+                "/groupcall");
     }
 }
