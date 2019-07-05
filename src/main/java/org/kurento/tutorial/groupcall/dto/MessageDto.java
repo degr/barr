@@ -10,6 +10,7 @@ public class MessageDto {
     private String sender;
     private String sdpOffer;
     private String name;
+    private String password;
     private String room;
     private CandidateDto candidate;
 

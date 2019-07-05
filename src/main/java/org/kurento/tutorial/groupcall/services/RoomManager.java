@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
 import org.kurento.tutorial.groupcall.websocket.Room;
 
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -34,22 +33,18 @@ public class RoomManager {
 
     private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
 
-    public Room getRoom(String roomName) {
-        log.debug("Searching for room {}", roomName);
-        Room room = Optional.ofNullable(rooms.get(roomName)).orElseGet(
-                () -> {
-                    log.debug("Room {} not existent. Will create now!", roomName);
-                    Room room1 = new Room(roomName, kurento.createMediaPipeline());
-                    rooms.put(roomName, room1);
-                    return room1;
-                });
-        log.debug("Room {} found!", roomName);
+    public Room create(String roomName) {
+        Room room = new Room(roomName, kurento.createMediaPipeline());
+        rooms.put(roomName, room);
         return room;
+    }
+
+    public Room getRoom(String roomName) {
+        return rooms.get(roomName);
     }
 
     public void removeRoom(Room room) {
         this.rooms.remove(room.getName());
         room.close();
-        log.info("Room {} removed and closed", room.getName());
     }
 }

@@ -17,11 +17,9 @@
 
 package org.kurento.tutorial.groupcall.websocket;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
+import com.google.gson.JsonObject;
+import lombok.Getter;
+import lombok.Setter;
 import org.kurento.client.Continuation;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.MediaPipeline;
@@ -32,7 +30,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.google.gson.JsonObject;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)
@@ -41,33 +44,40 @@ import com.google.gson.JsonObject;
 public class UserSession implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(UserSession.class);
-
+    @Getter
     private final String name;
-    private final WebSocketSession session;
-
-    private final MediaPipeline pipeline;
-
+    @Getter
     private final String roomName;
-    private final WebRtcEndpoint outgoingMedia;
-    private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
+    @Getter
+    private final WebSocketSession session;
+    @Getter
+    private final WebRtcEndpoint outgoingWebRtcPeer;
+    private final MediaPipeline pipeline;
+    @Getter
+    @Setter
+    private Set<String> authorities;
 
-    UserSession(final String name, String roomName, final WebSocketSession session,
-                MediaPipeline pipeline) {
+    private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia;
 
-        this.pipeline = pipeline;
-        this.name = name;
-        this.session = session;
+    UserSession(final String userName, String roomName, final WebSocketSession webSocketSession, MediaPipeline mediaPipeline) {
+        this.name = userName;
         this.roomName = roomName;
-        this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
+        this.session = webSocketSession;
+        this.pipeline = mediaPipeline;
 
-        this.outgoingMedia.addIceCandidateFoundListener(event -> {
+        authorities = new HashSet<>();
+        incomingMedia = new ConcurrentHashMap<>();
+
+        this.outgoingWebRtcPeer = new WebRtcEndpoint.Builder(mediaPipeline).build();
+
+        this.outgoingWebRtcPeer.addIceCandidateFoundListener(event -> {
             JsonObject response = new JsonObject();
             response.addProperty("id", "iceCandidate");
-            response.addProperty("name", name);
+            response.addProperty("name", userName);
             response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
             try {
-                synchronized (session) {
-                    session.sendMessage(new TextMessage(response.toString()));
+                synchronized (webSocketSession) {
+                    webSocketSession.sendMessage(new TextMessage(response.toString()));
                 }
             } catch (IOException e) {
                 log.debug(e.getMessage());
@@ -75,55 +85,23 @@ public class UserSession implements Closeable {
         });
     }
 
-    private WebRtcEndpoint getOutgoingWebRtcPeer() {
-        return outgoingMedia;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public WebSocketSession getSession() {
-        return session;
-    }
-
-    /**
-     * The room to which the user is currently attending.
-     *
-     * @return The room
-     */
-    String getRoomName() {
-        return this.roomName;
-    }
-
     void receiveVideoFrom(UserSession sender, String sdpOffer) throws IOException {
-        log.info("USER {}: connecting with {} in room {}", this.name, sender.getName(), this.roomName);
-
-        log.trace("USER {}: SdpOffer for {} is {}", this.name, sender.getName(), sdpOffer);
-
         final String ipSdpAnswer = this.getEndpointForUser(sender).processOffer(sdpOffer);
         final JsonObject scParams = new JsonObject();
         scParams.addProperty("id", "receiveVideoAnswer");
         scParams.addProperty("name", sender.getName());
         scParams.addProperty("sdpAnswer", ipSdpAnswer);
 
-        log.trace("USER {}: SdpAnswer for {} is {}", this.name, sender.getName(), ipSdpAnswer);
         this.sendMessage(scParams);
-        log.debug("gather candidates");
         this.getEndpointForUser(sender).gatherCandidates();
     }
 
     private WebRtcEndpoint getEndpointForUser(final UserSession sender) {
         if (sender.getName().equals(name)) {
-            log.debug("PARTICIPANT {}: configuring loopback", this.name);
-            return outgoingMedia;
+            return outgoingWebRtcPeer;
         }
-
-        log.debug("PARTICIPANT {}: receiving video from {}", this.name, sender.getName());
-
         WebRtcEndpoint incoming = incomingMedia.get(sender.getName());
         if (incoming == null) {
-            log.debug("PARTICIPANT {}: creating new endpoint for {}", this.name, sender.getName());
             incoming = new WebRtcEndpoint.Builder(pipeline).build();
 
             incoming.addIceCandidateFoundListener(event -> {
@@ -142,8 +120,6 @@ public class UserSession implements Closeable {
 
             incomingMedia.put(sender.getName(), incoming);
         }
-
-        log.debug("PARTICIPANT {}: obtained endpoint for {}", this.name, sender.getName());
         sender.getOutgoingWebRtcPeer().connect(incoming);
 
         return incoming;
@@ -198,7 +174,7 @@ public class UserSession implements Closeable {
             });
         }
 
-        outgoingMedia.release(new Continuation<Void>() {
+        outgoingWebRtcPeer.release(new Continuation<Void>() {
 
             @Override
             public void onSuccess(Void result) {
@@ -213,15 +189,13 @@ public class UserSession implements Closeable {
     }
 
     void sendMessage(JsonObject message) throws IOException {
-        log.debug("USER {}: Sending message {}", name, message);
         synchronized (session) {
             session.sendMessage(new TextMessage(message.toString()));
         }
     }
-
     void addCandidate(IceCandidate candidate, String name) {
         if (this.name.compareTo(name) == 0) {
-            outgoingMedia.addIceCandidate(candidate);
+            outgoingWebRtcPeer.addIceCandidate(candidate);
         } else {
             WebRtcEndpoint webRtc = incomingMedia.get(name);
             if (webRtc != null) {

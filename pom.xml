@@ -82,8 +82,6 @@
             <groupId>org.kurento</groupId>
             <artifactId>kurento-utils-js</artifactId>
         </dependency>
-
-
     </dependencies>
 
     <dependencyManagement>
