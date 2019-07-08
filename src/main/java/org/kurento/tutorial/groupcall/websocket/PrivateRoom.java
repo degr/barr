@@ -1,26 +1,23 @@
 package org.kurento.tutorial.groupcall.websocket;
 
-import lombok.Getter;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.kurento.client.MediaPipeline;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PrivateRoom extends Room {
     private static final String TOKEN_REGEX = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
-    private AtomicInteger roomSize;
-    private ReentrantLock reentrantLock = new ReentrantLock();
-
-    @Getter
     private final String secretKey;
+    private int roomSize;
+    private ReentrantLock reentrantLock = new ReentrantLock();
 
     public PrivateRoom(String roomName, MediaPipeline mediaPipeline, String secretKey) {
         super(roomName, mediaPipeline);
-        roomSize = new AtomicInteger(0);
-        this.secretKey = secretKey;
+        roomSize = 0;
+        this.secretKey = DigestUtils.md5Hex(secretKey);
     }
 
     @Override
@@ -29,12 +26,13 @@ public class PrivateRoom extends Room {
         if (!isAuthorized(participantRoomSession.getToken())) {
             return;
         }
-        if (!secretKey.equals(participantRoomSession.getSecretRoomKey())) {
+        if (!secretKey.equals(DigestUtils.md5Hex(participantRoomSession.getSecretRoomKey()))) {
             return;
         }
-        if (roomSize.getAndIncrement() > 4) {
+        if (roomSize > 4) {
             return;
         }
+        roomSize++;
         reentrantLock.unlock();
         super.join(participantRoomSession);
     }

@@ -58,6 +58,8 @@ function register() {
     let password = document.getElementById('password').value;
     let room = document.getElementById('roomName').value;
     let isPrivate = !!document.getElementById('isPrivateRoom').checked;
+
+
     document.getElementById('room-header').innerText = 'ROOM ' + room;
     document.getElementById('join').style.display = 'none';
     document.getElementById('room').style.display = 'block';
@@ -189,3 +191,13 @@ function sendMessage(message) {
     ws.send(jsonMessage);
 }
 
+function showSecret() {
+    let isPrivate = document.getElementById('isPrivateRoom');
+    let secret = document.getElementById('secretKey');
+
+    if (isPrivate.checked) {
+        secret.style.visibility = "visible";
+    } else {
+        secret.style.visibility = "hidden";
+    }
+}
