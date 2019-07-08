@@ -18,18 +18,25 @@
 package org.kurento.tutorial.groupcall.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.IceCandidate;
+import org.kurento.client.MediaPipeline;
+import org.kurento.tutorial.groupcall.auth.AuthorizationHandler;
 import org.kurento.tutorial.groupcall.dto.CandidateDto;
 import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -40,20 +47,26 @@ public class CallHandler extends TextWebSocketHandler {
     private static final String RECEIVE_VIDEO_FROM = "receiveVideoFrom";
     private static final String LEAVE_ROOM = "leaveRoom";
     private static final String ON_ICE_CANDIDATE = "onIceCandidate";
-    private final RoomManager roomManager;
 
+    private static final String LOGIN = "login";
+    private static final String PASSWORD = "password";
+    private static final String TOKEN = "token";
+
+    private final RoomManager roomManager;
     private final UserRegistry sessionRegistry;
+    private final AuthorizationHandler authorizationHandler;
 
     public CallHandler(RoomManager roomManager, UserRegistry sessionRegistry) {
         this.roomManager = roomManager;
         this.sessionRegistry = sessionRegistry;
+        authorizationHandler = new AuthorizationHandler();
     }
 
     @Override
     public void handleTextMessage(WebSocketSession webSocketSession, TextMessage message) throws Exception {
-
         ObjectMapper mapper = new ObjectMapper();
-        MessageDto messageDto = mapper.readValue(message.getPayload(), MessageDto.class);
+        String payload = message.getPayload();
+        MessageDto messageDto = mapper.readValue(payload, MessageDto.class);
         UserSession userSession = sessionRegistry.getBySession(webSocketSession);
 
         switch (messageDto.getId()) {
@@ -92,14 +105,26 @@ public class CallHandler extends TextWebSocketHandler {
     }
     /*private void createRoom()*/
 
-
     private void joinRoom(MessageDto params, WebSocketSession webSocketSession) throws IOException {
-        final String userName = params.getName();
         final String roomName = params.getRoom();
-        Room room = Optional.ofNullable(roomManager.getRoom(roomName))
-                .orElseGet(() -> roomManager.create(roomName));
 
-        UserSession userSession = new UserSession(userName, roomName, webSocketSession, room.getMediaPipeline());
+        Room room = Optional.ofNullable(roomManager.getRoom(roomName)).orElseGet(() -> roomManager.create(roomName));
+
+        JsonObject jsonObject = new JsonObject();
+
+        jsonObject.addProperty(LOGIN, params.getName());
+
+        jsonObject.addProperty(PASSWORD, params.getPassword());
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        Map<String, String> authInfo = authorizationHandler.authorize(jsonObject, httpHeaders);
+
+        String login = authInfo.get(LOGIN);
+        String token = authInfo.get(TOKEN);
+        MediaPipeline mediaPipeline = room.getMediaPipeline();
+
+        UserSession userSession = new UserSession(login, token, roomName, webSocketSession, mediaPipeline);
         room.join(userSession);
         sessionRegistry.register(userSession);
     }

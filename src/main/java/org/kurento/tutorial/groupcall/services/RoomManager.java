@@ -18,6 +18,7 @@ package org.kurento.tutorial.groupcall.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
+import org.kurento.tutorial.groupcall.websocket.PrivateRoom;
 import org.kurento.tutorial.groupcall.websocket.Room;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +38,12 @@ public class RoomManager {
         Room room = new Room(roomName, kurento.createMediaPipeline());
         rooms.put(roomName, room);
         return room;
+    }
+
+    public PrivateRoom createPrivateRoom(String roomName, String secretKey) {
+        PrivateRoom privateRoom = new PrivateRoom(roomName, kurento.createMediaPipeline(), secretKey);
+        rooms.put(roomName, privateRoom);
+        return privateRoom;
     }
 
     public Room getRoom(String roomName) {

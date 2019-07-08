@@ -18,7 +18,6 @@
 var ws = new WebSocket('wss://' + location.host + '/groupcall');
 var participants = {};
 var name;
-var password;
 
 window.onbeforeunload = function () {
     ws.close();
@@ -56,9 +55,9 @@ ws.onmessage = function (message) {
 
 function register() {
     name = document.getElementById('name').value;
-    password= document.getElementById('password').value;
+    let password = document.getElementById('password').value;
     let room = document.getElementById('roomName').value;
-
+    let isPrivate = !!document.getElementById('isPrivateRoom').checked;
     document.getElementById('room-header').innerText = 'ROOM ' + room;
     document.getElementById('join').style.display = 'none';
     document.getElementById('room').style.display = 'block';
@@ -67,7 +66,8 @@ function register() {
         id: 'joinRoom',
         name: name,
         password: password,
-        room: room
+        room: room,
+        isPrivateRoom: isPrivate
     });
 }
 

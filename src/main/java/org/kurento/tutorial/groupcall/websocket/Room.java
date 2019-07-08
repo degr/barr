@@ -43,47 +43,38 @@ public class Room implements Closeable {
     @Getter
     private final String name;
 
-    @Setter
-    @Getter
-    private AtomicBoolean isPrivate;
+
 
     public Room(String roomName, MediaPipeline mediaPipeline) {
         this.name = roomName;
-        isPrivate = new AtomicBoolean(false);
         this.mediaPipeline = mediaPipeline;
         roomParticipantsSessions = new ConcurrentHashMap<>();
     }
 
     void join(UserSession participantRoomSession) throws IOException {
-        boolean isPrivateRoom = this.isPrivate.get();
-        if (isPrivateRoom && roomParticipantsSessions.size() >= 4) {
-            throw new RuntimeException("Unable to join room");
-        }
-        if (isPrivateRoom&&participantRoomSession.getAuthorities().isEmpty()) {
-            throw new RuntimeException("Not authorized user");
-        }
+
         notifyRoomUsers(participantRoomSession);
-        roomParticipantsSessions.put(participantRoomSession.getName(), participantRoomSession);
+        roomParticipantsSessions.put(participantRoomSession.getLogin(), participantRoomSession);
         sendParticipantNames(participantRoomSession);
     }
 
     void leave(UserSession user) {
-        log.debug("PARTICIPANT {}: Leaving room {}", user.getName(), this.name);
+        log.debug("PARTICIPANT {}: Leaving room {}", user.getLogin(), this.name);
 
-        this.removeParticipant(user.getName());
+        this.removeParticipant(user.getLogin());
         user.close();
     }
 
     private void notifyRoomUsers(UserSession newParticipantSession) {
         final JsonObject newParticipantMsg = new JsonObject();
         newParticipantMsg.addProperty("id", "newParticipantArrived");
-        newParticipantMsg.addProperty("name", newParticipantSession.getName());
+        newParticipantMsg.addProperty("name", newParticipantSession.getLogin());
 
         for (final UserSession userSession : roomParticipantsSessions.values()) {
             try {
                 userSession.sendMessage(newParticipantMsg);
             } catch (final IOException e) {
-                log.debug("ROOM {}: participant {} could not be notified", name, userSession.getName(), e);
+                log.debug("ROOM {}: participant {} could not be notified", name, userSession.getLogin(), e);
             }
         }
     }
@@ -109,7 +100,7 @@ public class Room implements Closeable {
         final JsonArray participantsArray = new JsonArray();
         for (final UserSession participantSession : this.getRoomParticipantsSessions()) {
             if (!participantSession.equals(userSession)) {
-                final JsonElement participantName = new JsonPrimitive(participantSession.getName());
+                final JsonElement participantName = new JsonPrimitive(participantSession.getLogin());
                 participantsArray.add(participantName);
             }
         }
