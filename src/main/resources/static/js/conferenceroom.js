@@ -57,6 +57,7 @@ function register() {
     name = document.getElementById('name').value;
     let password = document.getElementById('password').value;
     let room = document.getElementById('roomName').value;
+    let roomPassword = document.getElementById('secretKey').value;
 
     let isPrivate = !!document.getElementById('isPrivateRoom').checked;
     let selector = document.getElementById('participantNumber');
@@ -75,6 +76,7 @@ function register() {
         password: password,
         room: room,
         isPrivateRoom: isPrivate,
+        secretKey: roomPassword,
         userNumber: selectorValue
     });
 }

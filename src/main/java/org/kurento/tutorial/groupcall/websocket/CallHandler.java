@@ -64,22 +64,22 @@ public class CallHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void handleTextMessage(WebSocketSession webSocketSession, TextMessage message) throws Exception {
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         MessageDto messageDto = objectMapper.readValue(message.getPayload(), MessageDto.class);
 
         switch (messageDto.getId()) {
             case JOIN_ROOM:
-                joinRoom.execute(messageDto, webSocketSession);
+                joinRoom.execute(messageDto, session);
                 break;
             case RECEIVE_VIDEO_FROM:
-                receiveVideo.execute(messageDto, webSocketSession);
+                receiveVideo.execute(messageDto, session);
                 break;
             case LEAVE_ROOM:
-                leaveRoom.execute(messageDto, webSocketSession);
+                leaveRoom.execute(messageDto, session);
                 break;
             case ON_ICE_CANDIDATE:
-                onIceCandidate.execute(messageDto, webSocketSession);
+                onIceCandidate.execute(messageDto, session);
                 break;
             default:
                 break;

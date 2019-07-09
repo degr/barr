@@ -77,8 +77,8 @@ public class UserSession implements Closeable {
             response.addProperty("name", login);
             response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
             try {
-                synchronized (webSocketSession) {
-                    webSocketSession.sendMessage(new TextMessage(response.toString()));
+                synchronized (session) {
+                    session.sendMessage(new TextMessage(response.toString()));
                 }
             } catch (IOException e) {
                 log.debug(e.getMessage());

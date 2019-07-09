@@ -1,5 +1,8 @@
 package org.kurento.tutorial.groupcall.websocket;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.kurento.client.MediaPipeline;
 
@@ -10,6 +13,8 @@ import java.util.regex.Pattern;
 
 public class PrivateRoom extends Room {
     private static final String TOKEN_REGEX = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
+    private static final String AUTHORITIES_KEY = "authorities";
+    private static final String SUBJECT_KEY = "sub";
     private final String secretKey;
     private ReentrantLock reentrantLock = new ReentrantLock();
 
@@ -21,7 +26,7 @@ public class PrivateRoom extends Room {
     @Override
     public void join(UserSession participantRoomSession) throws IOException {
         reentrantLock.lock();
-        if (!isAuthorizedToken(participantRoomSession.getToken())) {
+        if (!isAuthorizedToken(participantRoomSession.getLogin(), participantRoomSession.getToken())) {
             return;
         }
         if (!secretKey.equals(DigestUtils.md5Hex(participantRoomSession.getSecretRoomKey()))) {
@@ -31,9 +36,27 @@ public class PrivateRoom extends Room {
         super.join(participantRoomSession);
     }
 
-    private boolean isAuthorizedToken(String userToken) {
+    private boolean isAuthorizedToken(String userName, String userToken) {
         final Pattern compile = Pattern.compile(TOKEN_REGEX);
         final Matcher matcher = compile.matcher(userToken);
-        return matcher.matches();
+        boolean matches = matcher.matches();
+        if (!matches) {
+            return false;
+        }
+        DecodedJWT decode = JWT.decode(userToken);
+
+        Claim sub = decode.getClaim(SUBJECT_KEY);
+        if (sub == null) {
+            return false;
+        }
+        if (!sub.asString().equals(userName)) {
+            return false;
+        }
+
+        if (decode.getClaim(AUTHORITIES_KEY) == null) {
+            return false;
+        }
+
+        return true;
     }
 }

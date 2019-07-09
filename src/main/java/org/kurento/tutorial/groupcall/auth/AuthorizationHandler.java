@@ -1,10 +1,12 @@
 package org.kurento.tutorial.groupcall.auth;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -16,9 +18,10 @@ import java.util.function.Function;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 public class AuthorizationHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationHandler.class);
     private static final String BASE_URL = "http://localhost:8080/";
     private static final String LOGIN_KEY = "login";
-    private static final String PASSWORD_KEY = "password";
+    private static final String PASS_KEY = "password";
     private static final String TOKEN_KEY = "token";
     private static final String ANONYMOUS = "ANONYMOUS";
 
@@ -28,26 +31,36 @@ public class AuthorizationHandler {
         return Optional.ofNullable(template.getForEntity(fullPath, String.class).getBody());
     }
 
-    public Map<String, String> authorize(JsonObject map, HttpHeaders headers) {
-        Function<String, Map<String, String>> function = login -> getResponseMap(login, EMPTY);
-        JsonElement jsonLogin = map.get(LOGIN_KEY);
-        JsonElement jsonPassword = map.get(PASSWORD_KEY);
-        if (jsonLogin.isJsonNull() || jsonPassword.isJsonNull()) {
-            String nonEmptyLogin = jsonLogin.isJsonNull() ? ANONYMOUS : jsonLogin.getAsString();
-            return function.apply(nonEmptyLogin);
+    public Map<String, String> authorize(String login, String password) {
+        Function<String, Map<String, String>> function = singleLogin -> getResponseMap(singleLogin, EMPTY);
+
+        if (password.isEmpty()) {
+            String userLogin = login.isEmpty() ? ANONYMOUS : login;
+            return function.apply(userLogin);
         }
+
+        JsonObject requestJson = new JsonObject();
+        requestJson.addProperty(LOGIN_KEY, login);
+        requestJson.addProperty(PASS_KEY, password);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
         String path = BASE_URL + "users/signIn";
         String stringResponse;
         try {
-            stringResponse = doPost(path, map, headers);
+            stringResponse = doPost(path, requestJson, headers);
         } catch (Exception e) {
-            return function.apply(jsonLogin.getAsString());
+            LOGGER.error("Unable to load user {}", e.getMessage());
+            return function.apply(login);
         }
-        JsonObject jsonObject = new Gson().fromJson(stringResponse, JsonObject.class);
-        String login = jsonObject.get(LOGIN_KEY).getAsString();
-        String token = jsonObject.get(TOKEN_KEY).getAsString();
 
-        return getResponseMap(login, token);
+        JsonObject jsonResponse = new Gson().fromJson(stringResponse, JsonObject.class);
+        String responseLogin = jsonResponse.get(LOGIN_KEY).getAsString();
+        String responseToken = jsonResponse.get(TOKEN_KEY).getAsString();
+
+        return getResponseMap(responseLogin, responseToken);
     }
 
     private Map<String, String> getResponseMap(String login, String token) {
