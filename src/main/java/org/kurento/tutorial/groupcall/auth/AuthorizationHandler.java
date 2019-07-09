@@ -13,13 +13,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static org.apache.logging.log4j.util.Strings.EMPTY;
+
 public class AuthorizationHandler {
     private static final String BASE_URL = "http://localhost:8080/";
     private static final String LOGIN_KEY = "login";
     private static final String PASSWORD_KEY = "password";
     private static final String TOKEN_KEY = "token";
     private static final String ANONYMOUS = "ANONYMOUS";
-    private static final String EMPTY = "";
 
     private Optional<String> doGet(String path) {
         RestTemplate template = new RestTemplate();

@@ -32,6 +32,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -60,7 +61,7 @@ public class UserSession implements Closeable {
 
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia;
 
-    UserSession(final String login, String token, String roomName, final WebSocketSession webSocketSession, MediaPipeline mediaPipeline) {
+    public UserSession(final String login, String token, String roomName, final WebSocketSession webSocketSession, MediaPipeline mediaPipeline) {
         this.login = login;
         this.token = token;
         this.roomName = roomName;
@@ -85,7 +86,7 @@ public class UserSession implements Closeable {
         });
     }
 
-    void receiveVideoFrom(UserSession sender, String sdpOffer) throws IOException {
+    public void receiveVideoFrom(UserSession sender, String sdpOffer) throws IOException {
         final String ipSdpAnswer = this.getEndpointForUser(sender).processOffer(sdpOffer);
         final JsonObject scParams = new JsonObject();
         scParams.addProperty("id", "receiveVideoAnswer");
@@ -152,24 +153,27 @@ public class UserSession implements Closeable {
     @Override
     public void close() {
         log.debug("PARTICIPANT {}: Releasing resources", this.login);
-        for (final String remoteParticipantName : incomingMedia.keySet()) {
+        for (Map.Entry<String, WebRtcEndpoint> remoteParticipantEntry : incomingMedia.entrySet()) {
 
-            log.trace("PARTICIPANT {}: Released incoming EP for {}", this.login, remoteParticipantName);
+            final String participantName = remoteParticipantEntry.getKey();
 
-            final WebRtcEndpoint ep = this.incomingMedia.get(remoteParticipantName);
+            log.trace("PARTICIPANT {}: Released incoming EP for {}", this.login, participantName);
+
+
+            final WebRtcEndpoint ep = remoteParticipantEntry.getValue();
 
             ep.release(new Continuation<Void>() {
 
                 @Override
                 public void onSuccess(Void result) {
                     log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
-                            UserSession.this.login, remoteParticipantName);
+                            UserSession.this.login, participantName);
                 }
 
                 @Override
                 public void onError(Throwable cause) {
                     log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.login,
-                            remoteParticipantName);
+                            participantName);
                 }
             });
         }
@@ -194,7 +198,7 @@ public class UserSession implements Closeable {
         }
     }
 
-    void addCandidate(IceCandidate candidate, String name) {
+    public void addCandidate(IceCandidate candidate, String name) {
         if (this.login.compareTo(name) == 0) {
             outgoingWebRtcPeer.addIceCandidate(candidate);
         } else {

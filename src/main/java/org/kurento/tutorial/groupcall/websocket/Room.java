@@ -21,7 +21,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
@@ -32,7 +31,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class Room implements Closeable {
@@ -43,22 +42,29 @@ public class Room implements Closeable {
     @Getter
     private final String name;
 
+    private AtomicInteger counter;
+
+    private int participantLimit;
 
 
-    public Room(String roomName, MediaPipeline mediaPipeline) {
+    public Room(String roomName, int participantLimit, MediaPipeline mediaPipeline) {
         this.name = roomName;
+        this.participantLimit = participantLimit;
         this.mediaPipeline = mediaPipeline;
         roomParticipantsSessions = new ConcurrentHashMap<>();
+        counter = new AtomicInteger(0);
     }
 
-    void join(UserSession participantRoomSession) throws IOException {
-
+    public void join(UserSession participantRoomSession) throws IOException {
+        if (counter.getAndIncrement() > participantLimit) {
+            throw new RuntimeException("User overhead");
+        }
         notifyRoomUsers(participantRoomSession);
         roomParticipantsSessions.put(participantRoomSession.getLogin(), participantRoomSession);
         sendParticipantNames(participantRoomSession);
     }
 
-    void leave(UserSession user) {
+    public void leave(UserSession user) {
         log.debug("PARTICIPANT {}: Leaving room {}", user.getLogin(), this.name);
 
         this.removeParticipant(user.getLogin());
@@ -110,7 +116,7 @@ public class Room implements Closeable {
         userSession.sendMessage(existingParticipantsMsg);
     }
 
-    Collection<UserSession> getRoomParticipantsSessions() {
+    public Collection<UserSession> getRoomParticipantsSessions() {
         return roomParticipantsSessions.values();
     }
 

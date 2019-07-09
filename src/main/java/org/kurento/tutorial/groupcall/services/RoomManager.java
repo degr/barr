@@ -34,13 +34,13 @@ public class RoomManager {
 
     private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
 
-    public Room create(String roomName) {
-        Room room = new Room(roomName, kurento.createMediaPipeline());
+    public Room createRoom(String roomName, int participantLimit) {
+        Room room = new Room(roomName, participantLimit, kurento.createMediaPipeline());
         rooms.put(roomName, room);
         return room;
     }
 
-    public PrivateRoom createPrivateRoom(String roomName, String secretKey) {
+    public Room createPrivateRoom(String roomName, String secretKey) {
         PrivateRoom privateRoom = new PrivateRoom(roomName, kurento.createMediaPipeline(), secretKey);
         rooms.put(roomName, privateRoom);
         return privateRoom;

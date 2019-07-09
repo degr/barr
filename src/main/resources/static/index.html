@@ -23,9 +23,18 @@
                 <p>
                     <input type="text" name="room" value="" id="roomName" placeholder="Room" required>
                 </p>
+
                 <p>
-                    <input type="checkbox" name="isPrivate" onclick="showSecret()" id="isPrivateRoom"
+                    <input type="checkbox" name="isPrivate" onclick="showPrivateOptions()" id="isPrivateRoom"
                            placeholder="Is private?">
+                </p>
+                <p>
+                    <label for="participantNumber">User limit</label>
+                    <select id="participantNumber">
+                        <option value="four">4</option>
+                        <option value="six">6</option>
+                        <option value="eight">8</option>
+                    </select>
                 </p>
                 <p>
                     <input type="password" name="secretKey" id="secretKey" placeholder="Room secret key"
@@ -38,6 +47,7 @@
         </div>
         <div id="room" style="display: none;">
             <h2 id="room-header"></h2>
+            <h3 id="room-limit"></h3>
             <div id="participants"></div>
             <input type="button" id="button-leave" onmouseup="leaveRoom();"
                    value="Leave room">
