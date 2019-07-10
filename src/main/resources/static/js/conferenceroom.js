@@ -202,13 +202,13 @@ function sendMessage(message) {
 function showPrivateOptions() {
     let isPrivate = document.getElementById('isPrivateRoom');
     let secret = document.getElementById('secretKey');
-    let userNumber = document.getElementById('participantNumber');
+    let selectors = document.getElementById('selectors');
 
     if (isPrivate.checked) {
         secret.style.visibility = "visible";
-        userNumber.style.visibility = "hidden";
+        selectors.style.visibility = "hidden";
     } else {
         secret.style.visibility = "hidden";
-        userNumber.style.visibility = "visible";
+        selectors.style.visibility = "visible";
     }
 }

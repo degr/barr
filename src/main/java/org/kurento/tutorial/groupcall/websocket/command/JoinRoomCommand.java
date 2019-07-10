@@ -11,13 +11,13 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 @Component
 public class JoinRoomCommand implements RoomCommand {
     private static final String LOGIN = "login";
-    private static final String PASSWORD = "password";
     private static final String TOKEN = "token";
 
     private final UserRegistry sessionRegistry;
@@ -34,10 +34,13 @@ public class JoinRoomCommand implements RoomCommand {
     public void execute(MessageDto message, WebSocketSession webSocketSession) throws IOException {
         String roomName = message.getRoom();
         String key = message.getSecretKey();
-        String roomSecretKey = key != null ? key : EMPTY;
+        String roomSecretKey = key == null ? EMPTY : key;
+
         int userLimit = Integer.parseInt(message.getUserNumber());
         boolean isPrivate = Boolean.parseBoolean(message.getIsPrivateRoom());
-        Room room = getRoom(roomName, roomSecretKey, userLimit, isPrivate);
+
+        Room room = Optional.ofNullable(roomManager.getRoom(roomName))
+                .orElseGet(() -> createRoom(roomName, roomSecretKey, userLimit, isPrivate));
 
         String userName = message.getName();
         String password = message.getPassword();
@@ -53,24 +56,22 @@ public class JoinRoomCommand implements RoomCommand {
             login = userName;
             token = EMPTY;
         }
-
         UserSession userSession = new UserSession(login, token, roomName, webSocketSession, room.getMediaPipeline());
-        userSession.setSecretRoomKey(roomSecretKey);
+        if (isPrivate) {
+            userSession.setSecretRoomKey(roomSecretKey);
+        }
 
         room.join(userSession);
         sessionRegistry.register(userSession);
     }
 
-    private Room getRoom(String roomName, String key, int userLimit, boolean isPrivate) {
-        Room room = roomManager.getRoom(roomName);
-        if (room == null) {
-            if (isPrivate) {
-                room = roomManager.createPrivateRoom(roomName, key);
-            } else {
-                room = roomManager.createRoom(roomName, userLimit);
-            }
+    private Room createRoom(String roomName, String key, int userLimit, boolean isPrivate) {
+        Room room;
+        if (isPrivate) {
+            room = roomManager.createPrivateRoom(roomName, key);
+        } else {
+            room = roomManager.createRoom(roomName, userLimit);
         }
         return room;
     }
 }
-

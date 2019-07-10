@@ -32,13 +32,15 @@ public class AuthorizationHandler {
     }
 
     public Map<String, String> authorize(String login, String password) {
-        Function<String, Map<String, String>> function = singleLogin -> getResponseMap(singleLogin, EMPTY);
+        Function<String, Map<String, String>> singletonMapFunction = singleLogin -> getResponseMap(singleLogin, EMPTY);
 
         if (password.isEmpty()) {
             String userLogin = login.isEmpty() ? ANONYMOUS : login;
-            return function.apply(userLogin);
+            return singletonMapFunction.apply(userLogin);
         }
-
+        if (login.isEmpty()) {
+            return singletonMapFunction.apply(ANONYMOUS);
+        }
         JsonObject requestJson = new JsonObject();
         requestJson.addProperty(LOGIN_KEY, login);
         requestJson.addProperty(PASS_KEY, password);
@@ -52,14 +54,12 @@ public class AuthorizationHandler {
         try {
             stringResponse = doPost(path, requestJson, headers);
         } catch (Exception e) {
-            LOGGER.error("Unable to load user {}", e.getMessage());
-            return function.apply(login);
+            LOGGER.error("Unable to load user {}", String.valueOf(e));
+            return singletonMapFunction.apply(login);
         }
-
         JsonObject jsonResponse = new Gson().fromJson(stringResponse, JsonObject.class);
         String responseLogin = jsonResponse.get(LOGIN_KEY).getAsString();
         String responseToken = jsonResponse.get(TOKEN_KEY).getAsString();
-
         return getResponseMap(responseLogin, responseToken);
     }
 

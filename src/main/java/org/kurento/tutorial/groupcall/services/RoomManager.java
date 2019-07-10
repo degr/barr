@@ -17,6 +17,7 @@
 package org.kurento.tutorial.groupcall.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.kurento.client.KurentoClient;
 import org.kurento.tutorial.groupcall.websocket.PrivateRoom;
 import org.kurento.tutorial.groupcall.websocket.Room;
@@ -42,6 +43,12 @@ public class RoomManager {
 
     public Room createPrivateRoom(String roomName, String secretKey) {
         PrivateRoom privateRoom = new PrivateRoom(roomName, kurento.createMediaPipeline(), secretKey);
+        if (Strings.isBlank(roomName)) {
+            throw new UnsupportedOperationException("Unable to create unnamed private room");
+        }
+        if (Strings.isBlank(secretKey)) {
+            throw new UnsupportedOperationException("Unable to create unsecured private room with empty key");
+        }
         rooms.put(roomName, privateRoom);
         return privateRoom;
     }

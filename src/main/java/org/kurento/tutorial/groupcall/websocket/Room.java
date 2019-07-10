@@ -44,8 +44,7 @@ public class Room implements Closeable {
 
     private AtomicInteger counter;
 
-    private int participantLimit;
-
+    private final int participantLimit;
 
     public Room(String roomName, int participantLimit, MediaPipeline mediaPipeline) {
         this.name = roomName;
@@ -57,7 +56,7 @@ public class Room implements Closeable {
 
     public void join(UserSession participantRoomSession) throws IOException {
         if (counter.getAndIncrement() > participantLimit) {
-            throw new RuntimeException("User overhead");
+            return;
         }
         notifyRoomUsers(participantRoomSession);
         roomParticipantsSessions.put(participantRoomSession.getLogin(), participantRoomSession);

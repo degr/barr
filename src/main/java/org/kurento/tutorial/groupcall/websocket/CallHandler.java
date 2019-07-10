@@ -30,10 +30,11 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.util.Optional;
+
 
 @Slf4j
 public class CallHandler extends TextWebSocketHandler {
-    private static final String CREATE_ROOM = "createRoom";
     private static final String JOIN_ROOM = "joinRoom";
     private static final String RECEIVE_VIDEO_FROM = "receiveVideoFrom";
     private static final String LEAVE_ROOM = "leaveRoom";
@@ -89,7 +90,8 @@ public class CallHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         UserSession user = sessionRegistry.removeBySession(session);
-        roomManager.getRoom(user.getRoomName()).leave(user);
+        String roomName = user.getRoomName();
+        Optional.ofNullable(roomManager.getRoom(roomName))
+                .ifPresent(room -> room.leave(user));
     }
-    /*private void createRoom()*/
 }

@@ -46,10 +46,6 @@ public class UserRegistry {
         return userSessionsById.get(session.getId());
     }
 
-    public boolean exists(String name) {
-        return userSessionsByName.keySet().contains(name);
-    }
-
     public UserSession removeBySession(WebSocketSession session) {
         final UserSession user = getBySession(session);
         userSessionsByName.remove(user.getLogin());

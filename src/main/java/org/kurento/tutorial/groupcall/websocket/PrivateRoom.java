@@ -26,17 +26,24 @@ public class PrivateRoom extends Room {
     @Override
     public void join(UserSession participantRoomSession) throws IOException {
         reentrantLock.lock();
-        if (!isAuthorizedToken(participantRoomSession.getLogin(), participantRoomSession.getToken())) {
+        if (!isSecretValid(participantRoomSession.getSecretRoomKey())) {
             return;
         }
-        if (!secretKey.equals(DigestUtils.md5Hex(participantRoomSession.getSecretRoomKey()))) {
+        if (!isUserAuthorized(participantRoomSession.getLogin(), participantRoomSession.getToken())) {
             return;
         }
         reentrantLock.unlock();
         super.join(participantRoomSession);
     }
 
-    private boolean isAuthorizedToken(String userName, String userToken) {
+    private boolean isSecretValid(String userSecret) {
+        if (userSecret == null) {
+            return false;
+        }
+        return secretKey.equals(DigestUtils.md5Hex(userSecret));
+    }
+
+    private boolean isUserAuthorized(String userName, String userToken) {
         final Pattern compile = Pattern.compile(TOKEN_REGEX);
         final Matcher matcher = compile.matcher(userToken);
         boolean matches = matcher.matches();
@@ -52,11 +59,9 @@ public class PrivateRoom extends Room {
         if (!sub.asString().equals(userName)) {
             return false;
         }
-
         if (decode.getClaim(AUTHORITIES_KEY) == null) {
             return false;
         }
-
         return true;
     }
 }
