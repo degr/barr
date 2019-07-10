@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.apache.logging.log4j.util.Strings.EMPTY;
-
 public class AuthorizationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationHandler.class);
     private static final String BASE_URL = "http://localhost:8080/";
@@ -23,6 +21,7 @@ public class AuthorizationHandler {
     private static final String PASS_KEY = "password";
     private static final String TOKEN_KEY = "token";
     private static final String ANONYMOUS = "ANONYMOUS";
+    private static final String EMPTY = "";
 
     public Map<String, String> authorize(String login, String password) {
         Function<String, Map<String, String>> singletonMapFunction = singleLogin -> getResponseMap(singleLogin, EMPTY);

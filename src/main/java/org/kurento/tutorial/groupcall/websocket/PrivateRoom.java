@@ -44,10 +44,13 @@ public class PrivateRoom extends Room {
     }
 
     private boolean isUserAuthorized(String userName, String userToken) {
+        if (userToken.isEmpty()) {
+            return false;
+        }
         final Pattern compile = Pattern.compile(TOKEN_REGEX);
         final Matcher matcher = compile.matcher(userToken);
-        boolean matches = matcher.matches();
-        if (!matches) {
+
+        if (!matcher.matches()) {
             return false;
         }
         DecodedJWT decode = JWT.decode(userToken);

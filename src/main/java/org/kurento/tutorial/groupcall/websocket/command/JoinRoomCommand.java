@@ -42,20 +42,17 @@ public class JoinRoomCommand implements RoomCommand {
         Room room = Optional.ofNullable(roomManager.getRoom(roomName))
                 .orElseGet(() -> createRoom(roomName, roomSecretKey, userLimit, isPrivate));
 
-        String userName = message.getName();
-        String password = message.getPassword();
 
-        String login;
-        String token;
+        String login = message.getName();
+        String password = message.getPassword();
+        String token = EMPTY;
 
         if (isPrivate) {
-            Map<String, String> authInfo = authorizationHandler.authorize(userName, password);
+            Map<String, String> authInfo = authorizationHandler.authorize(login, password);
             login = authInfo.get(LOGIN);
             token = authInfo.get(TOKEN);
-        } else {
-            login = userName;
-            token = EMPTY;
         }
+
         UserSession userSession = new UserSession(login, token, roomName, webSocketSession, room.getMediaPipeline());
         if (isPrivate) {
             userSession.setSecretRoomKey(roomSecretKey);
