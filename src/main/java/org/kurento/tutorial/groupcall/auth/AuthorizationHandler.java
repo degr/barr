@@ -12,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import static org.apache.logging.log4j.util.Strings.EMPTY;
@@ -24,12 +23,6 @@ public class AuthorizationHandler {
     private static final String PASS_KEY = "password";
     private static final String TOKEN_KEY = "token";
     private static final String ANONYMOUS = "ANONYMOUS";
-
-    private Optional<String> doGet(String path) {
-        RestTemplate template = new RestTemplate();
-        String fullPath = BASE_URL + path;
-        return Optional.ofNullable(template.getForEntity(fullPath, String.class).getBody());
-    }
 
     public Map<String, String> authorize(String login, String password) {
         Function<String, Map<String, String>> singletonMapFunction = singleLogin -> getResponseMap(singleLogin, EMPTY);

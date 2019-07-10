@@ -59,9 +59,6 @@ public class PrivateRoom extends Room {
         if (!sub.asString().equals(userName)) {
             return false;
         }
-        if (decode.getClaim(AUTHORITIES_KEY) == null) {
-            return false;
-        }
-        return true;
+        return decode.getClaim(AUTHORITIES_KEY) != null;
     }
 }
