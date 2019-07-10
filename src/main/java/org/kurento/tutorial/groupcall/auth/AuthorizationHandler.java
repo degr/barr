@@ -10,9 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 public class AuthorizationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationHandler.class);
@@ -20,19 +17,13 @@ public class AuthorizationHandler {
     private static final String LOGIN_KEY = "login";
     private static final String PASS_KEY = "password";
     private static final String TOKEN_KEY = "token";
-    private static final String ANONYMOUS = "ANONYMOUS";
     private static final String EMPTY = "";
 
-    public Map<String, String> authorize(String login, String password) {
-        Function<String, Map<String, String>> singletonMapFunction = singleLogin -> getResponseMap(singleLogin, EMPTY);
+    public String authorize(String login, String password) {
+        if (password.isEmpty() || login.isEmpty()) {
+            return EMPTY;
+        }
 
-        if (password.isEmpty()) {
-            String userLogin = login.isEmpty() ? ANONYMOUS : login;
-            return singletonMapFunction.apply(userLogin);
-        }
-        if (login.isEmpty()) {
-            return singletonMapFunction.apply(ANONYMOUS);
-        }
         JsonObject requestJson = new JsonObject();
         requestJson.addProperty(LOGIN_KEY, login);
         requestJson.addProperty(PASS_KEY, password);
@@ -47,19 +38,10 @@ public class AuthorizationHandler {
             stringResponse = doPost(path, requestJson, headers);
         } catch (Exception e) {
             LOGGER.error("Unable to load user {}", String.valueOf(e));
-            return singletonMapFunction.apply(login);
+            return EMPTY;
         }
         JsonObject jsonResponse = new Gson().fromJson(stringResponse, JsonObject.class);
-        String responseLogin = jsonResponse.get(LOGIN_KEY).getAsString();
-        String responseToken = jsonResponse.get(TOKEN_KEY).getAsString();
-        return getResponseMap(responseLogin, responseToken);
-    }
-
-    private Map<String, String> getResponseMap(String login, String token) {
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put(LOGIN_KEY, login);
-        responseMap.put(TOKEN_KEY, token);
-        return Collections.unmodifiableMap(responseMap);
+        return jsonResponse.get(TOKEN_KEY).getAsString();
     }
 
     private String doPost(String path, JsonObject jsonObject, HttpHeaders httpHeaders) {

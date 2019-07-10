@@ -10,16 +10,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 @Component
 public class JoinRoomCommand implements RoomCommand {
-    private static final String LOGIN = "login";
-    private static final String TOKEN = "token";
-
     private final UserRegistry sessionRegistry;
     private final AuthorizationHandler authorizationHandler;
     private final RoomManager roomManager;
@@ -42,15 +38,12 @@ public class JoinRoomCommand implements RoomCommand {
         Room room = Optional.ofNullable(roomManager.getRoom(roomName))
                 .orElseGet(() -> createRoom(roomName, roomSecretKey, userLimit, isPrivate));
 
-
         String login = message.getName();
         String password = message.getPassword();
         String token = EMPTY;
 
         if (isPrivate) {
-            Map<String, String> authInfo = authorizationHandler.authorize(login, password);
-            login = authInfo.get(LOGIN);
-            token = authInfo.get(TOKEN);
+            token = authorizationHandler.authorize(login, password);
         }
 
         UserSession userSession = new UserSession(login, token, roomName, webSocketSession, room.getMediaPipeline());
