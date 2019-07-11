@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 public class JoinRoomCommand implements RoomCommand {
@@ -34,22 +33,28 @@ public class JoinRoomCommand implements RoomCommand {
         String login = message.getName();
         String password = message.getPassword();
         String token = EMPTY;
-
         boolean isPrivate = Boolean.parseBoolean(message.getIsPrivateRoom());
-
         Room room;
         if (isPrivate) {
-            String finalRoomKey = roomKey;
-            room = Optional.ofNullable(roomManager.getRoom(DigestUtils.md5Hex(finalRoomKey.getBytes())))
-                    .orElseGet(() -> roomManager.createPrivateRoom(finalRoomKey));
-            roomKey = DigestUtils.md5Hex(roomKey.getBytes());
-
+            room = getPrivateRoom(roomKey);
             token = authorizationHandler.authorize(login, password);
         } else {
             room = roomManager.getRoom(key);
         }
-        UserSession userSession = new UserSession(login, token, roomKey, webSocketSession, room.getMediaPipeline());
-        room.join(userSession);
-        sessionRegistry.register(userSession);
+        UserSession userSession = new UserSession(login, token, room.getRoomKey(), webSocketSession, room.getMediaPipeline());
+        try {
+            room.join(userSession);
+            sessionRegistry.register(userSession);
+        } catch (Exception e) {
+        }
+
+    }
+
+    private Room getPrivateRoom(String key) {
+        Room room = roomManager.getRoom(DigestUtils.md5Hex(key.getBytes()));
+        if (room == null) {
+            room = roomManager.createPrivateRoom(key);
+        }
+        return room;
     }
 }

@@ -60,16 +60,18 @@ function register() {
     let roomSelector = document.getElementById('roomSelector');
 
     let secretRoomKey = document.getElementById('secretRoomKey').value;
-    let selectorText = roomSelector.options[roomSelector.selectedIndex].text;
     let selectorValue = roomSelector.options[roomSelector.selectedIndex].value;
+    let roomName;
     let secretKey;
     if (secretRoomKey === "") {
         secretKey = selectorValue;
+        roomName = selectorValue;
     } else {
         secretKey = secretRoomKey;
+        roomName = "Private room";
     }
 
-    document.getElementById('room-header').innerText = selectorText;
+    document.getElementById('room-header').innerText = roomName;
     document.getElementById('join').style.display = 'none';
     document.getElementById('room').style.display = 'block';
 
