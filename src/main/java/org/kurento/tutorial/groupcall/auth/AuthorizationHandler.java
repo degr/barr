@@ -18,6 +18,7 @@ public class AuthorizationHandler {
     private static final String PASS_KEY = "password";
     private static final String TOKEN_KEY = "token";
     private static final String EMPTY = "";
+    private static final String SIGN_IN_URL = "users/signIn";
 
     public String authorize(String login, String password) {
         if (password.isEmpty() || login.isEmpty()) {
@@ -32,7 +33,8 @@ public class AuthorizationHandler {
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String path = BASE_URL + "users/signIn";
+
+        String path = BASE_URL + SIGN_IN_URL;
         String stringResponse;
         try {
             stringResponse = doPost(path, requestJson, headers);
