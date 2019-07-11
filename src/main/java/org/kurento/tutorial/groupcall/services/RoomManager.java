@@ -22,7 +22,6 @@ import org.kurento.client.KurentoClient;
 import org.kurento.tutorial.groupcall.websocket.PrivateRoom;
 import org.kurento.tutorial.groupcall.websocket.Room;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,10 +32,6 @@ public class RoomManager {
 
     public RoomManager(KurentoClient kurento) {
         this.kurento = kurento;
-    }
-
-    @PostConstruct
-    private void init() {
         String roomKey1 = "Room1";
         String roomKey2 = "Room2";
         String roomKey3 = "Room3";
