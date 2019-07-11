@@ -21,7 +21,7 @@ public class LeaveRoomCommand implements RoomCommand {
     @Override
     public void execute(MessageDto messageDto, WebSocketSession socketSession) {
         UserSession userSession = userRegistry.getBySession(socketSession);
-        final Room room = roomManager.getRoom(userSession.getRoomName());
+        final Room room = roomManager.getRoom(userSession.getRoomKey());
         room.leave(userSession);
         if (room.getRoomParticipantsSessions().isEmpty()) {
             roomManager.removeRoom(room);

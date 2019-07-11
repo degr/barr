@@ -15,18 +15,16 @@ public class PrivateRoom extends Room {
     private static final String TOKEN_REGEX = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
     private static final String AUTHORITIES_KEY = "authorities";
     private static final String SUBJECT_KEY = "sub";
-    private final String secretKey;
     private ReentrantLock reentrantLock = new ReentrantLock();
 
-    public PrivateRoom(String roomName, MediaPipeline mediaPipeline, String secretKey) {
-        super(roomName, 4, mediaPipeline);
-        this.secretKey = DigestUtils.md5Hex(secretKey);
+    public PrivateRoom(String roomKey, MediaPipeline mediaPipeline) {
+        super(DigestUtils.md5Hex(roomKey.getBytes()), 4, mediaPipeline);
     }
 
     @Override
     public void join(UserSession participantRoomSession) throws IOException {
         reentrantLock.lock();
-        if (!isSecretValid(participantRoomSession.getSecretRoomKey())) {
+        if (!isSecretValid(participantRoomSession.getRoomKey())) {
             return;
         }
         if (!isUserAuthorized(participantRoomSession.getLogin(), participantRoomSession.getToken())) {
@@ -36,11 +34,11 @@ public class PrivateRoom extends Room {
         super.join(participantRoomSession);
     }
 
-    private boolean isSecretValid(String userSecret) {
-        if (userSecret == null) {
+    private boolean isSecretValid(String roomKey) {
+        if (roomKey == null) {
             return false;
         }
-        return secretKey.equals(DigestUtils.md5Hex(userSecret));
+        return getRoomKey().equals(roomKey);
     }
 
     private boolean isUserAuthorized(String userName, String userToken) {

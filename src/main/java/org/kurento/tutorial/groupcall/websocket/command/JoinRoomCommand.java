@@ -1,5 +1,6 @@
 package org.kurento.tutorial.groupcall.websocket.command;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.kurento.tutorial.groupcall.auth.AuthorizationHandler;
 import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
@@ -12,10 +13,9 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.apache.logging.log4j.util.Strings.EMPTY;
-
 @Component
 public class JoinRoomCommand implements RoomCommand {
+    private static final String EMPTY = "";
     private final UserRegistry sessionRegistry;
     private final AuthorizationHandler authorizationHandler;
     private final RoomManager roomManager;
@@ -28,40 +28,28 @@ public class JoinRoomCommand implements RoomCommand {
 
     @Override
     public void execute(MessageDto message, WebSocketSession webSocketSession) throws IOException {
-        String roomName = message.getRoom();
-        String key = message.getSecretKey();
-        String roomSecretKey = key == null ? EMPTY : key;
-
-        int userLimit = Integer.parseInt(message.getUserNumber());
-        boolean isPrivate = Boolean.parseBoolean(message.getIsPrivateRoom());
-
-        Room room = Optional.ofNullable(roomManager.getRoom(roomName))
-                .orElseGet(() -> createRoom(roomName, roomSecretKey, userLimit, isPrivate));
+        String key = message.getRoomKey();
+        String roomKey = key == null ? EMPTY : key;
 
         String login = message.getName();
         String password = message.getPassword();
         String token = EMPTY;
 
-        if (isPrivate) {
-            token = authorizationHandler.authorize(login, password);
-        }
+        boolean isPrivate = Boolean.parseBoolean(message.getIsPrivateRoom());
 
-        UserSession userSession = new UserSession(login, token, roomName, webSocketSession, room.getMediaPipeline());
-        if (isPrivate) {
-            userSession.setSecretRoomKey(roomSecretKey);
-        }
-
-        room.join(userSession);
-        sessionRegistry.register(userSession);
-    }
-
-    private Room createRoom(String roomName, String key, int userLimit, boolean isPrivate) {
         Room room;
         if (isPrivate) {
-            room = roomManager.createPrivateRoom(roomName, key);
+            String finalRoomKey = roomKey;
+            room = Optional.ofNullable(roomManager.getRoom(DigestUtils.md5Hex(finalRoomKey.getBytes())))
+                    .orElseGet(() -> roomManager.createPrivateRoom(finalRoomKey));
+            roomKey = DigestUtils.md5Hex(roomKey.getBytes());
+
+            token = authorizationHandler.authorize(login, password);
         } else {
-            room = roomManager.createRoom(roomName, userLimit);
+            room = roomManager.getRoom(key);
         }
-        return room;
+        UserSession userSession = new UserSession(login, token, roomKey, webSocketSession, room.getMediaPipeline());
+        room.join(userSession);
+        sessionRegistry.register(userSession);
     }
 }

@@ -18,34 +18,34 @@
                     <input type="text" name="name" value="" id="name" placeholder="Username" required>
                 </p>
                 <p>
-                    <input type="password" name="password" value="" id="password" placeholder="Password" required>
+                    <input type="password" name="password" value="" id="password" placeholder="Password"
+                           STYLE="visibility: hidden">
                 </p>
-                <p>
-                    <input type="text" name="room" value="" id="roomName" placeholder="Room" required>
-                </p>
-
                 <p>
                     <label for="isPrivateRoom">Is private?</label>
                     <input type="checkbox" name="isPrivate" onclick="showPrivateOptions()" id="isPrivateRoom"
-                                                              placeholder="Is private?">
+                           placeholder="Is private?">
                 </p>
                 <p id="selectors">
-                    <label for="participantNumber">User limit</label>
-                    <select id="participantNumber">
-                        <option value="four">4</option>
-                        <option value="six">6</option>
-                        <option value="eight">8</option>
+                    <label for="roomSelector">Choose room</label>
+                    <select id="roomSelector">
+                        <option value="Room1">Room 1</option>
+                        <option value="Room2">Room 2</option>
+                        <option value="Room3">Room 3</option>
                     </select>
                 </p>
                 <p>
-                    <input type="password" name="secretKey" id="secretKey" placeholder="Room secret key"
-                           style="visibility: hidden">
+                    <input type="password" name="secretRoomKey" value="" id="secretRoomKey"
+                           placeholder="Secret room key" style="visibility: hidden">
                 </p>
+
                 <p class="submit">
                     <input type="submit" name="commit" value="Create and join">
                 </p>
             </form>
         </div>
+
+
         <div id="room" style="display: none;">
             <h2 id="room-header"></h2>
             <h3 id="room-limit"></h3>

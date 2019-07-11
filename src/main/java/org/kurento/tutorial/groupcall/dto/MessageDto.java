@@ -11,9 +11,7 @@ public class MessageDto {
     private String sdpOffer;
     private String name;
     private String password;
-    private String room;
     private String isPrivateRoom;
-    private String secretKey;
-    private String userNumber;
+    private String roomKey;
     private CandidateDto candidate;
 }

@@ -22,43 +22,49 @@ import org.kurento.client.KurentoClient;
 import org.kurento.tutorial.groupcall.websocket.PrivateRoom;
 import org.kurento.tutorial.groupcall.websocket.Room;
 
+import javax.annotation.PostConstruct;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 public class RoomManager {
+    private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
     private KurentoClient kurento;
 
     public RoomManager(KurentoClient kurento) {
         this.kurento = kurento;
     }
 
-    private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
-
-    public Room createRoom(String roomName, int participantLimit) {
-        Room room = new Room(roomName, participantLimit, kurento.createMediaPipeline());
-        rooms.put(roomName, room);
-        return room;
+    @PostConstruct
+    private void init() {
+        String roomKey1 = "Room1";
+        String roomKey2 = "Room2";
+        String roomKey3 = "Room3";
+        createRoom(roomKey1, 4);
+        createRoom(roomKey2, 6);
+        createRoom(roomKey3, 8);
     }
 
-    public Room createPrivateRoom(String roomName, String secretKey) {
-        PrivateRoom privateRoom = new PrivateRoom(roomName, kurento.createMediaPipeline(), secretKey);
-        if (Strings.isBlank(roomName)) {
-            throw new UnsupportedOperationException("Unable to create unnamed private room");
-        }
-        if (Strings.isBlank(secretKey)) {
+    private void createRoom(String roomKey, int participantLimit) {
+        Room room = new Room(roomKey, participantLimit, kurento.createMediaPipeline());
+        rooms.put(roomKey, room);
+    }
+
+    public Room createPrivateRoom(String privateRoomKey) {
+        if (Strings.isBlank(privateRoomKey)) {
             throw new UnsupportedOperationException("Unable to create unsecured private room with empty key");
         }
-        rooms.put(roomName, privateRoom);
+        PrivateRoom privateRoom = new PrivateRoom(privateRoomKey, kurento.createMediaPipeline());
+        rooms.put(privateRoom.getRoomKey(), privateRoom);
         return privateRoom;
     }
 
-    public Room getRoom(String roomName) {
-        return rooms.get(roomName);
+    public Room getRoom(String roomKey) {
+        return rooms.get(roomKey);
     }
 
     public void removeRoom(Room room) {
-        this.rooms.remove(room.getName());
+        this.rooms.remove(room.getRoomKey());
         room.close();
     }
 }

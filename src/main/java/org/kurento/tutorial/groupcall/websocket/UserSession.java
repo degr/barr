@@ -19,7 +19,6 @@ package org.kurento.tutorial.groupcall.websocket;
 
 import com.google.gson.JsonObject;
 import lombok.Getter;
-import lombok.Setter;
 import org.kurento.client.Continuation;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.MediaPipeline;
@@ -33,6 +32,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -41,18 +41,13 @@ import java.util.concurrent.ConcurrentMap;
  * @since 4.3.1
  */
 public class UserSession implements Closeable {
-
     private static final Logger log = LoggerFactory.getLogger(UserSession.class);
     @Getter
     private final String login;
     @Getter
     private final String token;
-
-    @Setter
     @Getter
-    private String secretRoomKey;
-    @Getter
-    private final String roomName;
+    private final String roomKey;
     @Getter
     private final WebSocketSession session;
     @Getter
@@ -61,10 +56,10 @@ public class UserSession implements Closeable {
 
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia;
 
-    public UserSession(final String login, String token, String roomName, final WebSocketSession webSocketSession, MediaPipeline mediaPipeline) {
+    public UserSession(final String login, String token, String roomKey, final WebSocketSession webSocketSession, MediaPipeline mediaPipeline) {
         this.login = login;
         this.token = token;
-        this.roomName = roomName;
+        this.roomKey = roomKey;
         this.session = webSocketSession;
         this.pipeline = mediaPipeline;
         incomingMedia = new ConcurrentHashMap<>();
@@ -132,22 +127,22 @@ public class UserSession implements Closeable {
 
     void cancelVideoFrom(final String senderName) {
         log.debug("PARTICIPANT {}: canceling video reception from {}", this.login, senderName);
-        final WebRtcEndpoint incoming = incomingMedia.remove(senderName);
+        Optional.ofNullable(incomingMedia.remove(senderName))
+                .ifPresent(webRtcEndpoint -> webRtcEndpoint.release(new Continuation<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
+                                UserSession.this.login, senderName);
+                    }
 
+                    @Override
+                    public void onError(Throwable cause) {
+                        log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.login,
+                                senderName);
+                    }
+                }));
         log.debug("PARTICIPANT {}: removing endpoint for {}", this.login, senderName);
-        incoming.release(new Continuation<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
-                        UserSession.this.login, senderName);
-            }
 
-            @Override
-            public void onError(Throwable cause) {
-                log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.login,
-                        senderName);
-            }
-        });
     }
 
     @Override
@@ -225,7 +220,7 @@ public class UserSession implements Closeable {
         }
         UserSession other = (UserSession) obj;
         boolean eq = login.equals(other.login);
-        eq &= roomName.equals(other.roomName);
+        eq &= roomKey.equals(other.roomKey);
         return eq;
     }
 
@@ -238,7 +233,7 @@ public class UserSession implements Closeable {
     public int hashCode() {
         int result = 1;
         result = 31 * result + login.hashCode();
-        result = 31 * result + roomName.hashCode();
+        result = 31 * result + roomKey.hashCode();
         return result;
     }
 }

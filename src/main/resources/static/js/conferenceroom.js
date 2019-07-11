@@ -56,17 +56,20 @@ ws.onmessage = function (message) {
 function register() {
     name = document.getElementById('name').value;
     let password = document.getElementById('password').value;
-    let room = document.getElementById('roomName').value;
-    let roomPassword = document.getElementById('secretKey').value;
-
     let isPrivate = !!document.getElementById('isPrivateRoom').checked;
-    let selector = document.getElementById('participantNumber');
-    let selectorValue = selector.options[selector.selectedIndex].text;
-    let limitText = selectorValue == null ? 4 : selectorValue;
+    let roomSelector = document.getElementById('roomSelector');
 
+    let secretRoomKey = document.getElementById('secretRoomKey').value;
+    let selectorText = roomSelector.options[roomSelector.selectedIndex].text;
+    let selectorValue = roomSelector.options[roomSelector.selectedIndex].value;
+    let secretKey;
+    if (secretRoomKey === "") {
+        secretKey = selectorValue;
+    } else {
+        secretKey = secretRoomKey;
+    }
 
-    document.getElementById('room-header').innerText = 'ROOM ' + room;
-    document.getElementById('room-limit').innerText = 'User limit ' + limitText;
+    document.getElementById('room-header').innerText = selectorText;
     document.getElementById('join').style.display = 'none';
     document.getElementById('room').style.display = 'block';
 
@@ -74,10 +77,8 @@ function register() {
         id: 'joinRoom',
         name: name,
         password: password,
-        room: room,
+        roomKey: secretKey,
         isPrivateRoom: isPrivate,
-        secretKey: roomPassword,
-        userNumber: selectorValue
     });
 }
 
@@ -201,14 +202,18 @@ function sendMessage(message) {
 
 function showPrivateOptions() {
     let isPrivate = document.getElementById('isPrivateRoom');
-    let secret = document.getElementById('secretKey');
+    let userPassword = document.getElementById('password');
+
+    let secret = document.getElementById('secretRoomKey');
     let selectors = document.getElementById('selectors');
 
     if (isPrivate.checked) {
         secret.style.visibility = "visible";
         selectors.style.visibility = "hidden";
+        userPassword.style.visibility = "visible"
     } else {
         secret.style.visibility = "hidden";
         selectors.style.visibility = "visible";
+        userPassword.style.visibility = "hidden"
     }
 }

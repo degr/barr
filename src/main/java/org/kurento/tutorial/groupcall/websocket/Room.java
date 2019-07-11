@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class Room implements Closeable {
@@ -40,23 +39,20 @@ public class Room implements Closeable {
     private final MediaPipeline mediaPipeline;
 
     @Getter
-    private final String name;
-
-    private AtomicInteger counter;
+    private final String roomKey;
 
     private final int participantLimit;
 
-    public Room(String roomName, int participantLimit, MediaPipeline mediaPipeline) {
-        this.name = roomName;
+    public Room(String roomKey, int participantLimit, MediaPipeline mediaPipeline) {
+        this.roomKey = roomKey;
         this.participantLimit = participantLimit;
         this.mediaPipeline = mediaPipeline;
         roomParticipantsSessions = new ConcurrentHashMap<>();
-        counter = new AtomicInteger(0);
     }
 
     public void join(UserSession participantRoomSession) throws IOException {
-        if (counter.getAndIncrement() > participantLimit) {
-            return;
+        if (roomParticipantsSessions.size() + 1 > participantLimit) {
+            throw new IllegalArgumentException("Unable to join room, User overhead. Room limit is " + participantLimit);
         }
         notifyRoomUsers(participantRoomSession);
         roomParticipantsSessions.put(participantRoomSession.getLogin(), participantRoomSession);
@@ -64,7 +60,7 @@ public class Room implements Closeable {
     }
 
     public void leave(UserSession user) {
-        log.debug("PARTICIPANT {}: Leaving room {}", user.getLogin(), this.name);
+        log.debug("PARTICIPANT {}: Leaving room {}", user.getLogin(), this.roomKey);
 
         this.removeParticipant(user.getLogin());
         user.close();
@@ -79,7 +75,7 @@ public class Room implements Closeable {
             try {
                 userSession.sendMessage(newParticipantMsg);
             } catch (final IOException e) {
-                log.debug("ROOM {}: participant {} could not be notified", name, userSession.getLogin(), e);
+                log.debug("ROOM {}: participant {} could not be notified", roomKey, userSession.getLogin(), e);
             }
         }
     }
@@ -128,15 +124,15 @@ public class Room implements Closeable {
         mediaPipeline.release(new Continuation<Void>() {
             @Override
             public void onSuccess(Void result) {
-                log.trace("ROOM {}: Released Pipeline", Room.this.name);
+                log.trace("ROOM {}: Released Pipeline", Room.this.roomKey);
             }
 
             @Override
             public void onError(Throwable cause) {
-                log.warn("PARTICIPANT {}: Could not release Pipeline", Room.this.name);
+                log.warn("PARTICIPANT {}: Could not release Pipeline", Room.this.roomKey);
             }
         });
-        log.debug("Room {} closed", this.name);
+        log.debug("Room {} closed", this.roomKey);
     }
 
     @PreDestroy
