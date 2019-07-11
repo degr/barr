@@ -42,11 +42,8 @@ public class JoinRoomCommand implements RoomCommand {
             room = roomManager.getRoom(key);
         }
         UserSession userSession = new UserSession(login, token, room.getRoomKey(), webSocketSession, room.getMediaPipeline());
-        try {
-            room.join(userSession);
-            sessionRegistry.register(userSession);
-        } catch (Exception e) {
-        }
+        room.join(userSession);
+        sessionRegistry.register(userSession);
 
     }
 
