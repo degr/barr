@@ -24,7 +24,7 @@
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
 
-        <demo.port>8081</demo.port>
+        <demo.port>443</demo.port>
         <version.kurento-datachannelexample>6.6.0</version.kurento-datachannelexample>
         <start-class>org.kurento.tutorial.groupcall.GroupCallApp</start-class>
     </properties>
