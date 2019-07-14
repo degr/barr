@@ -19,75 +19,68 @@ package org.kurento.tutorial.groupcall.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.kurento.client.IceCandidate;
-import org.kurento.tutorial.groupcall.dto.CandidateDto;
 import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
+import org.kurento.tutorial.groupcall.websocket.command.RoomCommand;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.io.IOException;
+import java.util.Optional;
 
 
 @Slf4j
 public class CallHandler extends TextWebSocketHandler {
+    private static final String JOIN_ROOM = "joinRoom";
+    private static final String RECEIVE_VIDEO_FROM = "receiveVideoFrom";
+    private static final String LEAVE_ROOM = "leaveRoom";
+    private static final String ON_ICE_CANDIDATE = "onIceCandidate";
 
     private final RoomManager roomManager;
+    private final UserRegistry sessionRegistry;
 
-    private final UserRegistry registry;
+    @Autowired
+    @Qualifier("join")
+    private RoomCommand joinRoom;
 
-    public CallHandler(RoomManager roomManager, UserRegistry registry) {
+    @Autowired
+    @Qualifier("receive")
+    private RoomCommand receiveVideo;
+
+    @Autowired
+    @Qualifier("leave")
+    private RoomCommand leaveRoom;
+
+    @Autowired
+    @Qualifier("onIce")
+    private RoomCommand onIceCandidate;
+
+    public CallHandler(RoomManager roomManager, UserRegistry sessionRegistry) {
         this.roomManager = roomManager;
-        this.registry = registry;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        MessageDto jsonMessage = mapper.readValue(message.getPayload(), MessageDto.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        MessageDto messageDto = objectMapper.readValue(message.getPayload(), MessageDto.class);
 
-
-        final UserSession user = registry.getBySession(session);
-
-        if (user != null) {
-            log.debug("Incoming message from user '{}': {}", user.getName(), jsonMessage);
-        } else {
-            log.debug("Incoming message from new user: {}", jsonMessage);
-
-        }
-
-        switch (jsonMessage.getId()) {
-            case "joinRoom":
-                joinRoom(jsonMessage, session);
+        switch (messageDto.getId()) {
+            case JOIN_ROOM:
+                joinRoom.execute(messageDto, session);
                 break;
-            case "receiveVideoFrom":
-                if (user != null) {
-                    final String senderName = jsonMessage.getSender();
-                    final UserSession sender = registry.getByName(senderName);
-                    final String sdpOffer = jsonMessage.getSdpOffer();
-                    user.receiveVideoFrom(sender, sdpOffer);
-                } else {
-                    log.error("Trying to receiveVideoFrom, but no user");
-                }
+            case RECEIVE_VIDEO_FROM:
+                receiveVideo.execute(messageDto, session);
                 break;
-            case "leaveRoom":
-                if (user != null) {
-                    leaveRoom(user);
-                } else {
-                    log.error("trying to leave room, but no user");
-                }
+            case LEAVE_ROOM:
+                leaveRoom.execute(messageDto, session);
                 break;
-            case "onIceCandidate":
-                CandidateDto candidate = jsonMessage.getCandidate();
-
-                if (user != null) {
-                    IceCandidate iceCandidate = new IceCandidate(candidate.getCandidate(),
-                            candidate.getSdpMid(), candidate.getSdpMLineIndex());
-                    user.addCandidate(iceCandidate, jsonMessage.getName());
-                }
+            case ON_ICE_CANDIDATE:
+                onIceCandidate.execute(messageDto, session);
                 break;
             default:
                 break;
@@ -96,24 +89,9 @@ public class CallHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        UserSession user = registry.removeBySession(session);
-        roomManager.getRoom(user.getRoomName()).leave(user);
-    }
-
-    private void joinRoom(MessageDto params, WebSocketSession session) throws IOException {
-        final String roomName = params.getRoom();
-        final String name = params.getName();
-        log.info("PARTICIPANT {}: trying to join room {}", name, roomName);
-        Room room = roomManager.getRoom(roomName);
-        final UserSession user = room.join(name, session);
-        registry.register(user);
-    }
-
-    private void leaveRoom(UserSession user) {
-        final Room room = roomManager.getRoom(user.getRoomName());
-        room.leave(user);
-        if (room.getParticipants().isEmpty()) {
-            roomManager.removeRoom(room);
-        }
+        UserSession user = sessionRegistry.removeBySession(session);
+        String roomName = user.getRoomKey();
+        Optional.ofNullable(roomManager.getRoom(roomName))
+                .ifPresent(room -> room.leave(user));
     }
 }

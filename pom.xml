@@ -24,7 +24,7 @@
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
 
-        <demo.port>8443</demo.port>
+        <demo.port>443</demo.port>
         <version.kurento-datachannelexample>6.6.0</version.kurento-datachannelexample>
         <start-class>org.kurento.tutorial.groupcall.GroupCallApp</start-class>
     </properties>
@@ -73,6 +73,13 @@
             <artifactId>webrtc-adapter</artifactId>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.12</version>
+        </dependency>
+
         <!-- Kurento -->
         <dependency>
             <groupId>org.kurento</groupId>
@@ -81,6 +88,19 @@
         <dependency>
             <groupId>org.kurento</groupId>
             <artifactId>kurento-utils-js</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.8.1</version>
         </dependency>
 
 

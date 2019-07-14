@@ -1,9 +1,11 @@
 package org.kurento.tutorial.groupcall;
 
 import org.kurento.client.KurentoClient;
+import org.kurento.tutorial.groupcall.auth.AuthorizationHandler;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
 import org.kurento.tutorial.groupcall.websocket.CallHandler;
+import org.kurento.tutorial.groupcall.websocket.command.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +29,31 @@ public class GroupCallApp implements WebSocketConfigurer {
     @Bean
     public CallHandler groupCallHandler(RoomManager roomManager, UserRegistry registry) {
         return new CallHandler(roomManager, registry);
+    }
+
+    @Bean
+    public AuthorizationHandler handler() {
+        return new AuthorizationHandler();
+    }
+
+    @Bean(name = "join")
+    public RoomCommand joinRoomCommand(UserRegistry registry, AuthorizationHandler handler, RoomManager manager) {
+        return new JoinRoomCommand(registry, handler, manager);
+    }
+
+    @Bean(name = "receive")
+    public RoomCommand receiveVideo(UserRegistry registry) {
+        return new ReceiveVideoCommand(registry);
+    }
+
+    @Bean(name = "leave")
+    public RoomCommand leaveRoom(RoomManager manager, UserRegistry registry) {
+        return new LeaveRoomCommand(manager, registry);
+    }
+
+    @Bean(name = "onIce")
+    public RoomCommand onIceCandidate(UserRegistry registry) {
+        return new OnIceCandidateCommand(registry);
     }
 
     @Bean

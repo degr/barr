@@ -1,39 +1,59 @@
 <html>
 <head>
-<meta charset="utf-8">
-<link rel="styleSheet" href="style.css" type="text/css" media="screen">
+    <meta charset="utf-8">
+    <link rel="styleSheet" href="style.css" type="text/css" media="screen">
 
-<script src="/webjars/webrtc-adapter/release/adapter.js"></script>
-<script src="./js/conferenceroom.js"></script>
-<script src="./js/participant.js"></script>
-<script src="./js/kurento-utils.js"></script>
+    <script src="/webjars/webrtc-adapter/release/adapter.js"></script>
+    <script src="./js/conferenceroom.js"></script>
+    <script src="./js/participant.js"></script>
+    <script src="./js/kurento-utils.js"></script>
 </head>
 <body>
-	<div id="container">
-		<div id="wrapper">
-			<div id="join" class="animate join">
-				<h1>Join a Room</h1>
-				<form onsubmit="register(); return false;" accept-charset="UTF-8">
-					<p>
-						<input type="text" name="name" value="" id="name"
-							placeholder="Username" required>
-					</p>
-					<p>
-						<input type="text" name="room" value="" id="roomName"
-							placeholder="Room" required>
-					</p>
-					<p class="submit">
-						<input type="submit" name="commit" value="Join!">
-					</p>
-				</form>
-			</div>
-			<div id="room" style="display: none;">
-				<h2 id="room-header"></h2>
-				<div id="participants"></div>
-				<input type="button" id="button-leave" onmouseup="leaveRoom();"
-					value="Leave room">
-			</div>
-		</div>
-	</div>
+<div id="container">
+    <div id="wrapper">
+        <div id="join" class="animate join">
+            <h1>Join a Room</h1>
+            <form onsubmit="register(); return false;" accept-charset="UTF-8">
+                <p>
+                    <input type="text" name="name" value="" id="name" placeholder="Username" required>
+                </p>
+                <p>
+                    <input type="password" name="password" value="" id="password" placeholder="Password"
+                           STYLE="visibility: hidden">
+                </p>
+                <p>
+                    <label for="isPrivateRoom">Is private?</label>
+                    <input type="checkbox" name="isPrivate" onclick="showPrivateOptions()" id="isPrivateRoom"
+                           placeholder="Is private?">
+                </p>
+                <p id="selectors">
+                    <label for="roomSelector">Choose room</label>
+                    <select id="roomSelector">
+                        <option value="Room1">Room 1</option>
+                        <option value="Room2">Room 2</option>
+                        <option value="Room3">Room 3</option>
+                    </select>
+                </p>
+                <p>
+                    <input type="password" name="secretRoomKey" value="" id="secretRoomKey"
+                           placeholder="Secret room key" style="visibility: hidden">
+                </p>
+
+                <p class="submit">
+                    <input type="submit" name="commit" value="Create and join">
+                </p>
+            </form>
+        </div>
+
+
+        <div id="room" style="display: none;">
+            <h2 id="room-header"></h2>
+            <h3 id="room-limit"></h3>
+            <div id="participants"></div>
+            <input type="button" id="button-leave" onmouseup="leaveRoom();"
+                   value="Leave room">
+        </div>
+    </div>
+</div>
 </body>
 </html>

@@ -19,11 +19,11 @@ var ws = new WebSocket('wss://' + location.host + '/groupcall');
 var participants = {};
 var name;
 
-window.onbeforeunload = function() {
+window.onbeforeunload = function () {
     ws.close();
 };
 
-ws.onmessage = function(message) {
+ws.onmessage = function (message) {
     var parsedMessage = JSON.parse(message.data);
     console.info('Received message: ' + message.data);
 
@@ -55,16 +55,32 @@ ws.onmessage = function(message) {
 
 function register() {
     name = document.getElementById('name').value;
-    var room = document.getElementById('roomName').value;
+    let password = document.getElementById('password').value;
+    let isPrivate = !!document.getElementById('isPrivateRoom').checked;
+    let roomSelector = document.getElementById('roomSelector');
 
-    document.getElementById('room-header').innerText = 'ROOM ' + room;
+    let secretRoomKey = document.getElementById('secretRoomKey').value;
+    let selectorValue = roomSelector.options[roomSelector.selectedIndex].value;
+    let roomName;
+    let secretKey;
+    if (secretRoomKey === "") {
+        secretKey = selectorValue;
+        roomName = selectorValue;
+    } else {
+        secretKey = secretRoomKey;
+        roomName = "Private room";
+    }
+
+    document.getElementById('room-header').innerText = roomName;
     document.getElementById('join').style.display = 'none';
     document.getElementById('room').style.display = 'block';
 
     sendMessage({
-        id : 'joinRoom',
-        name : name,
-        room : room
+        id: 'joinRoom',
+        name: name,
+        password: password,
+        roomKey: secretKey,
+        isPrivateRoom: isPrivate,
     });
 }
 
@@ -73,8 +89,8 @@ function onNewParticipant(request) {
 }
 
 function receiveVideoResponse(result) {
-    participants[result.name].rtcPeer.processAnswer (result.sdpAnswer, function (error) {
-        if (error) return console.error (error);
+    participants[result.name].rtcPeer.processAnswer(result.sdpAnswer, function (error) {
+        if (error) return console.error(error);
     });
 }
 
@@ -84,15 +100,15 @@ function callResponse(message) {
         stop();
     } else {
         webRtcPeer.processAnswer(message.sdpAnswer, function (error) {
-            if (error) return console.error (error);
+            if (error) return console.error(error);
         });
     }
 }
 
 function onExistingParticipants(msg) {
     var constraints = {
-        audio : true,
-        video : false/*{
+        audio: true,
+        video: false/*{
             mandatory : {
                 maxWidth : 320,
                 maxFrameRate : 15,
@@ -116,10 +132,10 @@ function onExistingParticipants(msg) {
     }
     participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
         function (error) {
-            if(error) {
+            if (error) {
                 return console.error(error);
             }
-            this.generateOffer (participant.offerToReceiveVideo.bind(participant));
+            this.generateOffer(participant.offerToReceiveVideo.bind(participant));
         });
 
     msg.data.forEach(receiveVideo);
@@ -127,10 +143,10 @@ function onExistingParticipants(msg) {
 
 function leaveRoom() {
     sendMessage({
-        id : 'leaveRoom'
+        id: 'leaveRoom'
     });
 
-    for ( var key in participants) {
+    for (var key in participants) {
         participants[key].dispose();
     }
 
@@ -148,8 +164,8 @@ function receiveVideo(sender) {
     var options = {
         remoteVideo: video,
         mediaConstraints: {
-            audio : true,
-            video : false/*{
+            audio: true,
+            video: false/*{
             mandatory : {
                 maxWidth : 320,
                 maxFrameRate : 15,
@@ -166,10 +182,10 @@ function receiveVideo(sender) {
 
     participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
         function (error) {
-            if(error) {
+            if (error) {
                 return console.error(error);
             }
-            this.generateOffer (participant.offerToReceiveVideo.bind(participant));
+            this.generateOffer(participant.offerToReceiveVideo.bind(participant));
         });
 }
 
@@ -186,3 +202,20 @@ function sendMessage(message) {
     ws.send(jsonMessage);
 }
 
+function showPrivateOptions() {
+    let isPrivate = document.getElementById('isPrivateRoom');
+    let userPassword = document.getElementById('password');
+
+    let secret = document.getElementById('secretRoomKey');
+    let selectors = document.getElementById('selectors');
+
+    if (isPrivate.checked) {
+        secret.style.visibility = "visible";
+        selectors.style.visibility = "hidden";
+        userPassword.style.visibility = "visible"
+    } else {
+        secret.style.visibility = "hidden";
+        selectors.style.visibility = "visible";
+        userPassword.style.visibility = "hidden"
+    }
+}
