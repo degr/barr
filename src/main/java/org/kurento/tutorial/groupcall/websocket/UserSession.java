@@ -36,10 +36,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * @author Ivan Gracia (izanmail@gmail.com)
- * @since 4.3.1
- */
+
 public class UserSession implements Closeable {
     private static final Logger log = LoggerFactory.getLogger(UserSession.class);
     @Getter

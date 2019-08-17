@@ -31,11 +31,6 @@ public class GroupCallApp implements WebSocketConfigurer {
         return new CallHandler(roomManager, registry);
     }
 
-    @Bean
-    public AuthorizationHandler handler() {
-        return new AuthorizationHandler();
-    }
-
     @Bean(name = "join")
     public RoomCommand joinRoomCommand(UserRegistry registry, AuthorizationHandler handler, RoomManager manager) {
         return new JoinRoomCommand(registry, handler, manager);
