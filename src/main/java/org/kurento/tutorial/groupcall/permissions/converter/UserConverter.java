@@ -1,8 +1,9 @@
-package com.scnsoft.permissions.converter;
+package org.kurento.tutorial.groupcall.permissions.converter;
 
-import com.scnsoft.permissions.dto.UserDTO;
-import com.scnsoft.permissions.persistence.repository.GroupRepository;
-import com.scnsoft.permissions.persistence.repository.PermissionRepository;
+import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
+import org.kurento.tutorial.groupcall.permissions.persistence.entity.*;
+import org.kurento.tutorial.groupcall.permissions.persistence.repository.GroupRepository;
+import org.kurento.tutorial.groupcall.permissions.persistence.repository.PermissionRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.*;

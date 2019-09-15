@@ -1,8 +1,8 @@
 package org.kurento.tutorial.groupcall.auth;
 
 import com.google.gson.JsonObject;
-import com.scnsoft.permissions.dto.UserDTO;
-import com.scnsoft.permissions.service.AuthenticationService;
+import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
+import org.kurento.tutorial.groupcall.permissions.service.AuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
