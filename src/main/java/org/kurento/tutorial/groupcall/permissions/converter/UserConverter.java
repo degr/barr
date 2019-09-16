@@ -1,87 +1,69 @@
 package org.kurento.tutorial.groupcall.permissions.converter;
 
+import lombok.RequiredArgsConstructor;
 import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
-import org.kurento.tutorial.groupcall.permissions.persistence.entity.*;
+import org.kurento.tutorial.groupcall.permissions.persistence.entity.AdditionalPermission;
+import org.kurento.tutorial.groupcall.permissions.persistence.entity.Group;
+import org.kurento.tutorial.groupcall.permissions.persistence.entity.Permission;
+import org.kurento.tutorial.groupcall.permissions.persistence.entity.User;
 import org.kurento.tutorial.groupcall.permissions.persistence.repository.GroupRepository;
-import org.kurento.tutorial.groupcall.permissions.persistence.repository.PermissionRepository;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Component
+@RequiredArgsConstructor
 public class UserConverter implements EntityConverter<User, UserDTO> {
-    private static final String EMPTY = "";
     private final GroupRepository groupRepository;
-    private final PermissionRepository permissionRepository;
-
-    public UserConverter(GroupRepository repository, PermissionRepository permissionRepository) {
-        this.groupRepository = repository;
-        this.permissionRepository = permissionRepository;
-    }
 
     @Override
     public UserDTO toDTO(User entity) {
-        if (entity == null) {
-            return null;
-        }
-        String groupName = Optional.ofNullable(entity.getGroup())
-                .map(Group::getName).orElse(EMPTY);
+        Optional<Group> optionalGroup = Optional.ofNullable(entity.getGroup());
+        String groupName = optionalGroup.map(Group::getName).orElse(null);
 
-        Map<String, Boolean> map = new HashMap<>();
-        List<AdditionalPermission> permissionList = Optional.ofNullable(entity.getAdditionalPermissions())
-                .orElse(Collections.emptyList());
-
-        permissionList.forEach(additionalPermission ->
-                map.put(
-                        additionalPermission.getPermission().getName(),
-                        additionalPermission.isEnabled()
-                ));
+        List<Permission> groupPermissions = optionalGroup.map(Group::getPermissions).orElse(Collections.emptyList());
+        List<AdditionalPermission> additionalPermissions = Optional.ofNullable(entity.getAdditionalPermissions()).orElse(Collections.emptyList());
+        List<String> permissions = merge(groupPermissions, additionalPermissions);
 
         return UserDTO.builder()
                 .id(entity.getId())
                 .login(entity.getLogin())
                 .password(entity.getPassword())
                 .groupName(groupName)
-                .additionalPermissions(map)
+                .permissions(permissions)
                 .build();
     }
 
-    @Override
-    public User toPersistence(UserDTO entity) {
-        if (entity == null) {
-            return null;
-        }
-        User user = new User();
-
-        Optional.ofNullable(entity.getId())
-                .ifPresent(user::setId);
-        user.setLogin(entity.getLogin());
-        user.setPassword(entity.getPassword());
-
-        Optional.ofNullable(entity.getGroupName())
-                .flatMap(groupRepository::findUserGroupByName)
-                .ifPresent(user::setGroup);
-        if (user.getId() != null) {
-            List<AdditionalPermission> list =
-                    getAdditionalPermissions(user, entity.getAdditionalPermissions());
-            user.setAdditionalPermissions(list);
-        }
-        return user;
+    private List<String> merge(List<Permission> groupPermissions, List<AdditionalPermission> additionalPermissions) {
+        Map<String, Boolean> resolvedAdditionalPermissions = additionalPermissions.stream()
+                .collect(toMap(additionalPermission -> additionalPermission.getPermission().getName(), AdditionalPermission::isEnabled));
+        return Stream.concat(resolvedAdditionalPermissions.keySet().stream(), groupPermissions.stream().map(Permission::getName))
+                .distinct()
+                .filter(permission -> resolvedAdditionalPermissions.getOrDefault(permission, true))
+                .collect(toList());
     }
 
-    private List<AdditionalPermission> getAdditionalPermissions(User user, Map<String, Boolean> map) {
-        Iterable<Permission> permissionsByNames = permissionRepository.findPermissionsByNames(map.keySet());
-        List<AdditionalPermission> list = new ArrayList<>();
-        permissionsByNames
-                .forEach(permission -> {
-                    AdditionalPermission additionalPermission = AdditionalPermission.builder()
-                            .id(new CompositePermissionId(user.getId(), permission.getId()))
-                            .user(user)
-                            .permission(permission)
-                            .isEnabled(map.get(permission.getName()))
-                            .build();
-                    list.add(additionalPermission);
-                });
-        return list;
+    @Override
+    public User toPersistence(UserDTO entityDTO) {
+        User user = new User();
+        Optional.ofNullable(entityDTO.getId())
+                .ifPresent(user::setId);
+
+        user.setLogin(requireNonNull(entityDTO.getLogin()));
+        user.setPassword(requireNonNull(entityDTO.getPassword()));
+
+        Optional.ofNullable(entityDTO.getGroupName())
+                .filter(s -> !s.trim().isEmpty())
+                .flatMap(groupRepository::findGroupByName)
+                .ifPresent(user::setGroup);
+        return user;
     }
 }

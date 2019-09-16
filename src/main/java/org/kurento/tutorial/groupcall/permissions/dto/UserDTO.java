@@ -3,14 +3,17 @@ package org.kurento.tutorial.groupcall.permissions.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Map;
+import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @Data
 @Builder
-public class UserDTO implements EntityDTO {
+public class UserDTO implements EntityDTO<Long> {
     private Long id;
+    @Pattern(regexp = "^(?=.*[A-Za-z0-9]$)[A-Za-z][A-Za-z\\d.-]{0,256}$")
     private String login;
+    @Pattern(regexp = "^(?=.*[A-Za-z0-9]$)[A-Za-z][A-Za-z\\d.-]{0,256}$")
     private String password;
     private String groupName;
-    private Map<String, Boolean> additionalPermissions;
+    private List<String> permissions;
 }

@@ -1,5 +1,6 @@
 package org.kurento.tutorial.groupcall.permissions.util;
 
+import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -7,23 +8,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Aspect
 @Component
 public class PerformanceLogger {
     private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceLogger.class);
 
-    @Around("@annotation(org.kurento.tutorial.groupcall.permissions.util.ExecutionTime)")
+    @SneakyThrows
+    @Around("@annotation(org.kurento.tutorial.groupcall.permissions.util.ExecutionTime)||execution(* org.kurento.tutorial.groupcall.permissions.controller..*(..))")
     public Object logPerformance(ProceedingJoinPoint point) {
-        Object object = null;
-        try {
-            long start = System.currentTimeMillis();
-            object = point.proceed();
-            long end = System.currentTimeMillis();
-            LOGGER.info("The performance of {} method is: {} milliseconds", point.getSignature(), end - start);
-            return object;
-        } catch (Throwable e) {
-            LOGGER.error("Exception: {}", e.getLocalizedMessage());
-        }
-        return object;
+        String signature = point.getSignature().toShortString();
+        long start = System.currentTimeMillis();
+        LOGGER.info("Method {} execution started at: {}", signature, LocalDateTime.now());
+        long end = System.currentTimeMillis();
+        LOGGER.info("Method {} execution lasted: {}", signature, end - start);
+        LOGGER.info("Method {} execution ended at: {}", signature, LocalDateTime.now());
+        return point.proceed();
     }
 }

@@ -22,9 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
-import org.kurento.tutorial.groupcall.websocket.command.RoomCommand;
+import org.kurento.tutorial.groupcall.websocket.command.CommandManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -35,29 +34,10 @@ import java.util.Optional;
 
 @Slf4j
 public class CallHandler extends TextWebSocketHandler {
-    private static final String JOIN_ROOM = "joinRoom";
-    private static final String RECEIVE_VIDEO_FROM = "receiveVideoFrom";
-    private static final String LEAVE_ROOM = "leaveRoom";
-    private static final String ON_ICE_CANDIDATE = "onIceCandidate";
-
     private final RoomManager roomManager;
     private final UserRegistry sessionRegistry;
-
     @Autowired
-    @Qualifier("join")
-    private RoomCommand joinRoom;
-
-    @Autowired
-    @Qualifier("receive")
-    private RoomCommand receiveVideo;
-
-    @Autowired
-    @Qualifier("leave")
-    private RoomCommand leaveRoom;
-
-    @Autowired
-    @Qualifier("onIce")
-    private RoomCommand onIceCandidate;
+    private CommandManager commandManager;
 
     public CallHandler(RoomManager roomManager, UserRegistry sessionRegistry) {
         this.roomManager = roomManager;
@@ -69,22 +49,9 @@ public class CallHandler extends TextWebSocketHandler {
         ObjectMapper objectMapper = new ObjectMapper();
         MessageDto messageDto = objectMapper.readValue(message.getPayload(), MessageDto.class);
 
-        switch (messageDto.getId()) {
-            case JOIN_ROOM:
-                joinRoom.execute(messageDto, session);
-                break;
-            case RECEIVE_VIDEO_FROM:
-                receiveVideo.execute(messageDto, session);
-                break;
-            case LEAVE_ROOM:
-                leaveRoom.execute(messageDto, session);
-                break;
-            case ON_ICE_CANDIDATE:
-                onIceCandidate.execute(messageDto, session);
-                break;
-            default:
-                break;
-        }
+        Optional.ofNullable(messageDto.getId())
+                .flatMap(commandManager::getCommand)
+                .ifPresent(roomCommand -> roomCommand.execute(messageDto, session));
     }
 
     @Override

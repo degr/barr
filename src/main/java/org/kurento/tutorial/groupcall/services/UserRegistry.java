@@ -14,14 +14,12 @@
  * limitations under the License.
  *
  */
-
 package org.kurento.tutorial.groupcall.services;
 
 import org.kurento.tutorial.groupcall.websocket.UserSession;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.concurrent.ConcurrentHashMap;
-
 
 public class UserRegistry {
 

@@ -1,63 +1,66 @@
 package org.kurento.tutorial.groupcall.permissions.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
-import org.kurento.tutorial.groupcall.permissions.service.AuthenticationService;
 import org.kurento.tutorial.groupcall.permissions.service.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("users")
+@RequiredArgsConstructor
 public class UserController {
+    private static final String TOTAL_PAGES = "totalPages";
+    private static final String TOTAL_ELEMENTS = "totalElements";
+    private static final String USERS = "users";
     private final UserService userService;
-    private final AuthenticationService authenticationService;
 
-    public UserController(UserService userService,
-                          AuthenticationService authenticationService) {
-        this.userService = userService;
-
-        this.authenticationService = authenticationService;
+    @GetMapping(value = "{id}")
+    public UserDTO getById(@PathVariable(value = "id") Long id) {
+        return userService.findById(id).orElseThrow(RuntimeException::new);
     }
 
-    @PostMapping("signIn")
-    public ResponseEntity signIn(@RequestBody UserDTO user) {
-        Map<Object, Object> map = authenticationService.signIn(user);
-        return ResponseEntity.ok(map);
+    @GetMapping(path = "/assign_group")
+    public UserDTO assignGroup(@RequestParam Long id, @RequestParam Long groupId) {
+        return userService.updateGroup(id, groupId);
     }
 
-    @GetMapping("{id}")
-    public UserDTO getByName(@PathVariable(value = "id") String login) {
+    @GetMapping(path = "/release_group")
+    public UserDTO releaseGroup(@RequestParam Long id) {
+        return userService.updateGroup(id, null);
+    }
+
+    @GetMapping(value = "user")
+    public UserDTO getByLogin(@RequestParam String login) {
         return userService.findByLogin(login).orElseThrow(RuntimeException::new);
     }
 
-    @PostMapping("signUp")
-    public ResponseEntity signUp(@RequestBody UserDTO user) {
-        Map<Object, Object> map = authenticationService.signUp(user);
-        return ResponseEntity.ok(map);
+    @GetMapping()
+    public ResponseEntity getAll(@RequestParam int page, @RequestParam int size) {
+        Page<UserDTO> all = userService.findAll(page, size);
+        return getUsersResponse(all);
     }
 
-    @PreAuthorize("hasAuthority('admin')")
+    private ResponseEntity getUsersResponse(Page<UserDTO> userPage) {
+        int totalPages = userPage.getTotalPages();
+        long totalElements = userPage.getTotalElements();
+        List<UserDTO> content = userPage.getContent();
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put(TOTAL_PAGES, totalPages);
+        responseMap.put(TOTAL_ELEMENTS, totalElements);
+        responseMap.put(USERS, content);
+        return ResponseEntity.ok(responseMap);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("delete/{id}")
     public void deleteById(@PathVariable(value = "id") Long id) {
         userService.deleteById(id);
-    }
-
-    @PreAuthorize("hasAnyAuthority('admin','moderator')")
-    @GetMapping(path = "assignGroup", params = {"login", "groupNames"})
-    public UserDTO assignGroup(@RequestParam String login, @RequestParam String groupName) {
-        userService.assignGroup(login, groupName);
-        return userService.findByLogin(login).orElseThrow(RuntimeException::new);
-    }
-
-    @PreAuthorize("hasAnyAuthority('admin','moderator')")
-    @GetMapping(path = "assignPermission", params = {"login", "groupNames"})
-    public UserDTO assignPermission(@RequestParam String login,
-                                    @RequestParam String permissionName,
-                                    @RequestParam boolean isEnabled) {
-        userService.assignAdditionalPermission(login, permissionName, isEnabled);
-        return userService.findByLogin(login).orElseThrow(RuntimeException::new);
     }
 }

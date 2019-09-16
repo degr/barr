@@ -1,34 +1,29 @@
 package org.kurento.tutorial.groupcall.permissions.service;
 
+import lombok.RequiredArgsConstructor;
 import org.kurento.tutorial.groupcall.permissions.converter.EntityConverter;
 import org.kurento.tutorial.groupcall.permissions.dto.EntityDTO;
 import org.kurento.tutorial.groupcall.permissions.persistence.entity.PersistenceEntity;
 import org.springframework.data.repository.CrudRepository;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@RequiredArgsConstructor
 public abstract class BaseCrudService<T extends PersistenceEntity<R>, K extends EntityDTO, R extends Serializable> implements EntityService<K, R> {
-    private CrudRepository<T, R> repository;
-    private EntityConverter<T, K> converter;
-
-    public BaseCrudService(CrudRepository<T, R> repository, EntityConverter<T, K> converter) {
-        this.repository = repository;
-        this.converter = converter;
-    }
+    private final CrudRepository<T, R> repository;
+    private final EntityConverter<T, K> converter;
 
     @Override
-    public Optional<K> saveEntity(K entityDTO) {
+    public K save(K entityDTO) {
         return Optional.ofNullable(entityDTO)
                 .map(converter::toPersistence)
-                .filter(entity -> Optional.ofNullable(entity.getId())
-                        .map(id -> !repository.existsById(id))
-                        .orElse(true)
-                )
                 .map(repository::save)
-                .map(converter::toDTO);
+                .map(converter::toDTO)
+                .orElseThrow(UnsupportedOperationException::new);
     }
 
     @Override
@@ -44,9 +39,15 @@ public abstract class BaseCrudService<T extends PersistenceEntity<R>, K extends 
                 .ifPresent(repository::deleteById);
     }
 
-    Stream<K> entities() {
+    @Override
+    public List<K> findAll() {
         return StreamSupport
                 .stream(repository.findAll().spliterator(), false)
-                .map(converter::toDTO);
+                .map(converter::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public long count() {
+        return repository.count();
     }
 }

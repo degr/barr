@@ -1,89 +1,79 @@
 package org.kurento.tutorial.groupcall.permissions.service;
 
+import org.apache.logging.log4j.util.Strings;
 import org.kurento.tutorial.groupcall.permissions.converter.UserConverter;
 import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
-import org.kurento.tutorial.groupcall.permissions.persistence.entity.AdditionalPermission;
-import org.kurento.tutorial.groupcall.permissions.persistence.entity.CompositePermissionId;
-import org.kurento.tutorial.groupcall.permissions.persistence.entity.Permission;
+import org.kurento.tutorial.groupcall.permissions.persistence.entity.Group;
 import org.kurento.tutorial.groupcall.permissions.persistence.entity.User;
 import org.kurento.tutorial.groupcall.permissions.persistence.repository.GroupRepository;
-import org.kurento.tutorial.groupcall.permissions.persistence.repository.PermissionRepository;
 import org.kurento.tutorial.groupcall.permissions.persistence.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService extends BaseCrudService<User, UserDTO, Long> {
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
-    private final UserConverter converter;
-    private final PermissionRepository permissionRepository;
-
+    private final UserConverter userConverter;
     private final BCryptPasswordEncoder encoder;
 
     public UserService(UserRepository userRepository,
                        GroupRepository groupRepository,
-                       UserConverter converter,
-                       PermissionRepository permissionRepository, BCryptPasswordEncoder encoder) {
-        super(userRepository, converter);
+                       UserConverter userConverter,
+                       BCryptPasswordEncoder encoder) {
+        super(userRepository, userConverter);
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
-        this.converter = converter;
-        this.permissionRepository = permissionRepository;
+        this.userConverter = userConverter;
         this.encoder = encoder;
     }
 
-    public Optional<UserDTO> save(UserDTO userDTO) {
+    @Override
+    public UserDTO save(UserDTO userDTO) {
         return Optional.ofNullable(userDTO)
-                .filter(userDTO1 -> !userRepository.existsByLogin(userDTO1.getLogin()))
                 .map(userDTO1 -> {
-                    userDTO1.setPassword(encoder.encode(userDTO.getPassword()));
-                    saveEntity(userDTO1);
+                    String password = userDTO1.getPassword();
+                    userDTO1.setPassword(encrypt(password));
                     return userDTO1;
-                });
+                })
+                .map(super::save)
+                .orElseThrow(() -> new NullPointerException("Unable to save user"));
+    }
+
+    private String encrypt(String string) {
+        if (Strings.isBlank(string)) {
+            throw new NullPointerException("Password is empty");
+        }
+        return encoder.encode(string);
+    }
+
+    public boolean existByLogin(String userLogin) {
+        return userRepository.existsByLogin(userLogin);
     }
 
     public Optional<UserDTO> findByLogin(String name) {
         return userRepository.findUserByLogin(name)
-                .map(converter::toDTO);
+                .map(userConverter::toDTO);
     }
 
-    public void assignGroup(String login, String userGroupName) {
-        userRepository.findUserByLogin(login)
-                .ifPresent(user1 -> {
-                    groupRepository.findUserGroupByName(userGroupName)
-                            .ifPresent(user1::setGroup);
-                    userRepository.save(user1);
-                });
+    public UserDTO updateGroup(Long userId, Long groupId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NullPointerException("No such entity"));
+        Group group = Optional.ofNullable(groupId)
+                .flatMap(groupRepository::findById)
+                .orElse(null);
+        user.setGroup(group);
+        User savedUser = userRepository.save(user);
+        return userConverter.toDTO(savedUser);
     }
 
-    public void assignAdditionalPermission(String login, String permissionName, boolean isEnabled) {
-        User user = userRepository.findUserByLogin(login).orElseThrow(RuntimeException::new);
-        Permission permission = permissionRepository.findPermissionByName(permissionName)
-                .orElseGet(() -> {
-                    Permission newPermission = new Permission();
-                    newPermission.setName(permissionName);
-                    permissionRepository.save(newPermission);
-                    return permissionRepository.findPermissionByName(permissionName)
-                            .orElseThrow(RuntimeException::new);
-                });
-        user.getAdditionalPermissions()
-                .add(AdditionalPermission.builder()
-                        .id(new CompositePermissionId(user.getId(), permission.getId()))
-                        .user(user)
-                        .permission(permission)
-                        .isEnabled(isEnabled)
-                        .build()
-                );
-        userRepository.save(user);
-    }
-
-    @Override
-    public List<UserDTO> findAll() {
-        return entities().collect(Collectors.toList());
+    public Page<UserDTO> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findAll(pageable)
+                .map(userConverter::toDTO);
     }
 }
