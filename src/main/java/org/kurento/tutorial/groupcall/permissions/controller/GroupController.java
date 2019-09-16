@@ -1,20 +1,19 @@
 package org.kurento.tutorial.groupcall.permissions.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.kurento.tutorial.groupcall.permissions.dto.GroupDTO;
 import org.kurento.tutorial.groupcall.permissions.service.GroupService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@RestController(value = "user_permissions")
+@RestController
 @RequestMapping("groups")
+@RequiredArgsConstructor
 public class GroupController {
     private final GroupService groupService;
-
-    public GroupController(GroupService groupService) {
-        this.groupService = groupService;
-    }
 
     @GetMapping
     public List<GroupDTO> getGroups() {
@@ -22,18 +21,14 @@ public class GroupController {
     }
 
     @GetMapping("{id}")
-    public GroupDTO findById(@PathVariable Long id) {
+    public GroupDTO getById(@PathVariable Long id) {
         return groupService.findById(id).orElseThrow(RuntimeException::new);
     }
 
-    @PreAuthorize("hasAnyAuthority('admin','moderator')")
-    @GetMapping(path = "assignPermission", params = {"userGroupName", "permissionName"})
-    public GroupDTO assignPermission(@RequestParam String userGroupName, @RequestParam String permissionName) {
-        return groupService.assignPermission(userGroupName, permissionName).orElseThrow(RuntimeException::new);
-    }
-    @PreAuthorize("hasAnyAuthority('admin','moderator')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MODERATOR')")
     @PostMapping()
-    public GroupDTO postGroup(@RequestBody GroupDTO groupDTO) {
-        return groupService.saveEntity(groupDTO).orElseThrow(RuntimeException::new);
+    public GroupDTO postGroup(@NotNull @RequestBody GroupDTO groupDTO) {
+        groupDTO.setName(groupDTO.getName().toUpperCase());
+        return groupService.save(groupDTO);
     }
 }

@@ -32,12 +32,14 @@ public class RoomManager {
 
     public RoomManager(KurentoClient kurento) {
         this.kurento = kurento;
-        String roomKey1 = "Room1";
-        String roomKey2 = "Room2";
-        String roomKey3 = "Room3";
-        createRoom(roomKey1, 4);
-        createRoom(roomKey2, 6);
-        createRoom(roomKey3, 8);
+        String bar = "Bar";
+        String table1 = "Table1";
+        String table2 = "Table2";
+        String sofa = "Sofa";
+        createRoom(bar, 10);
+        createRoom(table1, 4);
+        createRoom(table2, 4);
+        createRoom(sofa, 6);
     }
 
     private void createRoom(String roomKey, int participantLimit) {

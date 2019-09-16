@@ -384,7 +384,7 @@ export default class Canvas extends React.Component {
             }
 
             const object = this.props.location;
-            this.pointerControl.setPosition(object.x, object.y);
+            this.pointerControl.setPosition(object.x, object.y+1.5, object.z);
         }
     }
 }

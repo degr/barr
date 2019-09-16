@@ -48,7 +48,6 @@ public class CallHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         MessageDto messageDto = objectMapper.readValue(message.getPayload(), MessageDto.class);
-
         Optional.ofNullable(messageDto.getId())
                 .flatMap(commandManager::getCommand)
                 .ifPresent(roomCommand -> roomCommand.execute(messageDto, session));
