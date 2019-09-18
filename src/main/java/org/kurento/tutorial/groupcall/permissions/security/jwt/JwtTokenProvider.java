@@ -52,7 +52,7 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, EMPTY, userDetails.getAuthorities());
     }
 
-    boolean validateToken(String token) {
+    boolean isValid(String token) {
         if (Strings.isBlank(token)) {
             return false;
         }

@@ -1,5 +1,6 @@
-package org.kurento.tutorial.groupcall.websocket.command;
+package org.kurento.tutorial.groupcall.websocket;
 
+import org.kurento.tutorial.groupcall.websocket.command.RoomCommand;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -7,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Component
 public class CommandManager {
     private final Map<String, RoomCommand> commandMap;
 
@@ -23,7 +23,7 @@ public class CommandManager {
         });
     }
 
-    public Optional<RoomCommand> getCommand(String commandId) {
+    Optional<RoomCommand> getCommand(String commandId) {
         String key = commandId.toUpperCase();
         return Optional.ofNullable(commandMap.get(key));
     }

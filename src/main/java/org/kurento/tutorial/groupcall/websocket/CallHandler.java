@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.kurento.tutorial.groupcall.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
-import org.kurento.tutorial.groupcall.websocket.command.CommandManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -30,7 +28,6 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.Optional;
-
 
 @Slf4j
 public class CallHandler extends TextWebSocketHandler {

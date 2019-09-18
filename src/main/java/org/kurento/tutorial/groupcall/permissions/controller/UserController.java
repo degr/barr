@@ -26,11 +26,13 @@ public class UserController {
         return userService.findById(id).orElseThrow(RuntimeException::new);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','MODERATOR')")
     @GetMapping(path = "/assign_group")
     public UserDTO assignGroup(@RequestParam Long id, @RequestParam Long groupId) {
         return userService.updateGroup(id, groupId);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','MODERATOR')")
     @GetMapping(path = "/release_group")
     public UserDTO releaseGroup(@RequestParam Long id) {
         return userService.updateGroup(id, null);

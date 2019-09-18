@@ -5,7 +5,6 @@ import org.apache.logging.log4j.util.Strings;
 import org.kurento.tutorial.groupcall.permissions.service.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
@@ -22,6 +21,6 @@ public class JwtUserDetailsService implements UserDetailsService {
                 .filter(Strings::isNotBlank)
                 .flatMap(userService::findByLogin)
                 .map(jwtUserFactory::build)
-                .orElseThrow(() -> new UsernameNotFoundException("Unable to find user with such name"));
+                .orElseThrow(() -> new JwtAuthenticationException("Unable to find user with such name"));
     }
 }

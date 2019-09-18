@@ -22,7 +22,6 @@ import org.springframework.web.socket.WebSocketSession;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserRegistry {
-
     private final ConcurrentHashMap<String, UserSession> userSessionsByName;
     private final ConcurrentHashMap<String, UserSession> userSessionsById;
 

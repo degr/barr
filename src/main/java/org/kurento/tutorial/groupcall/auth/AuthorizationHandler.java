@@ -1,44 +1,30 @@
 package org.kurento.tutorial.groupcall.auth;
 
-import com.google.gson.JsonObject;
+import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
 import org.kurento.tutorial.groupcall.permissions.service.AuthenticationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.Optional;
 
+import static org.apache.logging.log4j.util.Strings.EMPTY;
+
+@AllArgsConstructor
 @Service
 public class AuthorizationHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationHandler.class);
-
+    private static final String TOKEN = "token";
     private final AuthenticationService authenticationService;
 
-    public AuthorizationHandler(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
-    }
-
-
     public String authorize(String login, String password) {
-        if (password.isEmpty() || login.isEmpty()) {
-            return "";
+        if (Strings.isBlank(login) || Strings.isBlank(password)) {
+            return EMPTY;
         }
-
-        JsonObject requestJson = new JsonObject();
-        requestJson.addProperty("login", login);
-        requestJson.addProperty("password", password);
-
-
-        Map<Object, Object> stringResponse;
-        try {
-            stringResponse = authenticationService.signIn(UserDTO.builder().login(login).password(password).build());
-            return (String) stringResponse.get("token");
-        } catch (Exception e) {
-            LOGGER.error("Unable to load user {}", String.valueOf(e));
-            return "";
-        }
-
+        UserDTO userDTO = UserDTO.builder().login(login).password(password).build();
+        return Optional.of(userDTO)
+                .map(authenticationService::signIn)
+                .map(map -> map.get(TOKEN))
+                .map(String::valueOf)
+                .orElse(EMPTY);
     }
-
 }

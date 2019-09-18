@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.kurento.client.MediaPipeline;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class PrivateRoom extends Room {
     }
 
     private boolean isUserAuthorized(String userName, String userToken) {
-        if (userToken.isEmpty()) {
+        if (Strings.isBlank(userToken)) {
             return false;
         }
         final Pattern compile = Pattern.compile(TOKEN_REGEX);

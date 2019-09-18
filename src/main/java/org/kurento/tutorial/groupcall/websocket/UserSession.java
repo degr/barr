@@ -208,7 +208,6 @@ public class UserSession implements Closeable {
      */
     @Override
     public boolean equals(Object obj) {
-
         if (this == obj) {
             return true;
         }
@@ -218,6 +217,7 @@ public class UserSession implements Closeable {
         UserSession other = (UserSession) obj;
         boolean eq = login.equals(other.login);
         eq &= roomKey.equals(other.roomKey);
+        eq &= token.equals(other.token);
         return eq;
     }
 
@@ -231,6 +231,7 @@ public class UserSession implements Closeable {
         int result = 1;
         result = 31 * result + login.hashCode();
         result = 31 * result + roomKey.hashCode();
+        result = 31 * result + token.hashCode();
         return result;
     }
 }

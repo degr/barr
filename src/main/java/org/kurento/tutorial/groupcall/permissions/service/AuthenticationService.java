@@ -51,8 +51,7 @@ public class AuthenticationService {
         JwtUser principal = (JwtUser) authenticate.getPrincipal();
 
         String username = principal.getUsername();
-        Collection<String> roleNames = authenticate.getAuthorities()
-                .stream()
+        Collection<String> roleNames = authenticate.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
 
@@ -61,7 +60,7 @@ public class AuthenticationService {
         map.put(LOGIN_KEY, username);
         map.put(PERMISSIONS_KEY, roleNames);
         map.put(TOKEN_KEY, token);
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     private List<String> getValidPermissions(List<String> inputPermissions) {
