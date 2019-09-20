@@ -26,10 +26,11 @@ public class JoinPrivateRoomCommand extends JoinRoomCommand implements RoomComma
 
     @Override
     public void execute(@NotNull MessageDto messageDto, @NotNull WebSocketSession socketSession) {
-        String key = messageDto.getRoomKey();
-        Room room = roomManager.getRoom(DigestUtils.md5Hex(key));
-        if (room == null && isNotBlank(key)) {
-            room = roomManager.createPrivateRoom(key);
+        String roomKey = messageDto.getRoomKey();
+        String encoded = DigestUtils.md5Hex(roomKey);
+        Room room = roomManager.getRoom(encoded);
+        if (room == null && isNotBlank(encoded)) {
+            room = roomManager.createPrivateRoom(encoded);
         } else if (room == null) {
             throw new UnsupportedOperationException("Unable to get private room with such key");
         }
