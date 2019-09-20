@@ -19,6 +19,7 @@ package org.kurento.tutorial.groupcall.services;
 import org.kurento.tutorial.groupcall.websocket.UserSession;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserRegistry {
@@ -45,8 +46,10 @@ public class UserRegistry {
 
     public UserSession removeBySession(WebSocketSession session) {
         final UserSession user = getBySession(session);
-        userSessionsByName.remove(user.getLogin());
-        userSessionsById.remove(session.getId());
+        if (Objects.nonNull(user)) {
+            userSessionsByName.remove(user.getLogin());
+            userSessionsById.remove(session.getId());
+        }
         return user;
     }
 }

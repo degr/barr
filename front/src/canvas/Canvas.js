@@ -4,6 +4,7 @@ import CANNON from 'cannon';
 import PointerControl from "./PointerControl";
 import FBXLoader from 'three-fbxloader-offical';
 import './Canvas.scss';
+import {register} from "../kurrento/conferenceroom";
 
 const pathBarAvatar = '/models/fbx/avatar_sit_bar_01.fbx';
 const pathTableAvatar = '/models/fbx/avatar_sit_table_01.fbx';
@@ -411,7 +412,7 @@ export default class Canvas extends React.Component {
                     this.avatarIsLoaded = true;
                 });
             }
-
+            register();
             const object = this.props.location;
             this.pointerControl.setPosition(object.x, object.y + 1.5, object.z);
         }

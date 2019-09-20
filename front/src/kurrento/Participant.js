@@ -15,8 +15,8 @@
  *
  */
 
-var PARTICIPANT_MAIN_CLASS = 'participant main';
-var PARTICIPANT_CLASS = 'participant';
+let PARTICIPANT_MAIN_CLASS = 'participant main';
+let PARTICIPANT_CLASS = 'participant';
 
 /**
  * Creates a video element for a new participant
@@ -26,13 +26,13 @@ var PARTICIPANT_CLASS = 'participant';
  *                        The tag of the new element will be 'video<name>'
  * @return
  */
-function Participant(name) {
+export function Participant(name) {
     this.name = name;
-    var container = document.createElement('div');
+    let container = document.createElement('div');
     container.className = isPresentMainParticipant() ? PARTICIPANT_CLASS : PARTICIPANT_MAIN_CLASS;
     container.id = name;
-    var span = document.createElement('span');
-    var video = document.createElement('video');
+    let span = document.createElement('span');
+    let video = document.createElement('video');
     this.rtcPeer = null;
 
     container.appendChild(video);
@@ -52,7 +52,7 @@ function Participant(name) {
 
     function switchContainerClass() {
         if (container.className === PARTICIPANT_CLASS) {
-            var elements = Array.prototype.slice.call(document.getElementsByClassName(PARTICIPANT_MAIN_CLASS));
+            let elements = Array.prototype.slice.call(document.getElementsByClassName(PARTICIPANT_MAIN_CLASS));
             elements.forEach(function(item) {
                 item.className = PARTICIPANT_CLASS;
             });
@@ -70,7 +70,7 @@ function Participant(name) {
     this.offerToReceiveVideo = function(error, offerSdp){
         if (error) return console.error ("sdp offer error");
         console.log('Invoking SDP offer callback function');
-        var msg =  { id : "receiveVideoFrom",
+        let msg =  { id : "receiveVideoFrom",
             sender : name,
             sdpOffer : offerSdp
         };
@@ -81,7 +81,7 @@ function Participant(name) {
     this.onIceCandidate = function (candidate) {
         console.log("Local candidate" + JSON.stringify(candidate));
 
-        var message = {
+        let message = {
             id: 'onIceCandidate',
             candidate: candidate,
             name: name

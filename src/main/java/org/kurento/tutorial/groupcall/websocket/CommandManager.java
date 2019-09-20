@@ -1,30 +1,40 @@
 package org.kurento.tutorial.groupcall.websocket;
 
 import org.kurento.tutorial.groupcall.websocket.command.RoomCommand;
+import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Service
 public class CommandManager {
     private final Map<String, RoomCommand> commandMap;
+    private final ApplicationContext applicationContext;
 
-    public CommandManager(List<RoomCommand> commandList) {
-        commandMap = new HashMap<>();
-        commandList.forEach(command -> {
-            Component componentAnnotation = command.getClass().getDeclaredAnnotation(Component.class);
-            String commandId = Optional.ofNullable(componentAnnotation)
-                    .map(Component::value)
-                    .map(String::toUpperCase)
-                    .orElseGet(() -> command.getClass().getSimpleName());
-            commandMap.put(commandId, command);
-        });
+    public CommandManager(ApplicationContext appContext) {
+        this.applicationContext = appContext;
+        commandMap = new ConcurrentHashMap<>();
+    }
+
+    @PostConstruct
+    private void init() {
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(Collections.singletonList(ClasspathHelper.forClass(RoomCommand.class))));
+        Set<Class<? extends RoomCommand>> subTypesOf = reflections.getSubTypesOf(RoomCommand.class);
+        subTypesOf.stream()
+                .map(aClass -> aClass.getDeclaredAnnotation(Component.class))
+                .filter(Objects::nonNull)
+                .map(Component::value)
+                .forEach(s -> commandMap.put(s, (RoomCommand) applicationContext.getBean(s)));
     }
 
     Optional<RoomCommand> getCommand(String commandId) {
-        String key = commandId.toUpperCase();
-        return Optional.ofNullable(commandMap.get(key));
+        return Optional.ofNullable(commandMap.get(commandId));
     }
 }

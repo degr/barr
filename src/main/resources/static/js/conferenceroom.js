@@ -24,6 +24,7 @@ window.onbeforeunload = function () {
 };
 
 ws.onmessage = function (message) {
+    debugger;
     var parsedMessage = JSON.parse(message.data);
     console.info('Received message: ' + message.data);
 
@@ -54,33 +55,36 @@ ws.onmessage = function (message) {
 }
 
 function register() {
-    name = document.getElementById('name').value;
-    let password = document.getElementById('password').value;
     let isPrivate = !!document.getElementById('isPrivateRoom').checked;
+    isPrivate ? joinPrivateRoom() : joinPublicRoom();
+}
+
+function joinPublicRoom() {
+    name = document.getElementById('name').value;
     let roomSelector = document.getElementById('roomSelector');
-
-    let secretRoomKey = document.getElementById('secretRoomKey').value;
-    let selectorValue = roomSelector.options[roomSelector.selectedIndex].value;
-    let roomName;
-    let secretKey;
-    if (secretRoomKey === "") {
-        secretKey = selectorValue;
-        roomName = selectorValue;
-    } else {
-        secretKey = secretRoomKey;
-        roomName = "Private room";
-    }
-
-    document.getElementById('room-header').innerText = roomName;
+    let roomKey = roomSelector.options[roomSelector.selectedIndex].value;
+    document.getElementById('room-header').innerText = roomKey;
     document.getElementById('join').style.display = 'none';
     document.getElementById('room').style.display = 'block';
-
     sendMessage({
         id: 'joinRoom',
         name: name,
+        roomKey: roomKey,
+    });
+}
+
+function joinPrivateRoom() {
+    name = document.getElementById('name').value;
+    let password = document.getElementById('password').value;
+    let secretKey = document.getElementById('secretRoomKey').value;
+    document.getElementById('room-header').innerText = "Private room";
+    document.getElementById('join').style.display = 'none';
+    document.getElementById('room').style.display = 'block';
+    sendMessage({
+        id: 'joinPrivateRoom',
+        name: name,
         password: password,
         roomKey: secretKey,
-        isPrivateRoom: isPrivate,
     });
 }
 

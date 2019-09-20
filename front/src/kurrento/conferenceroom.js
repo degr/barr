@@ -1,16 +1,16 @@
-var ws = new WebSocket('wss://' + location.host + '/groupcall');
-var participants = {};
-var name;
+let ws = new WebSocket('wss://' + window.location.host + '/groupcall');
+let participants = {};
+let name;
 
 window.onbeforeunload = function () {
     ws.close();
 };
 
 ws.onmessage = function (message) {
-    var parsedMessage = JSON.parse(message.data);
+    let parsedMessage = JSON.parse(message.data);
     console.info('Received message: ' + message.data);
 
-    switch (parsedMessage.id) {
+    /*switch (parsedMessage.id) {
         case 'existingParticipants':
             onExistingParticipants(parsedMessage);
             break;
@@ -27,17 +27,16 @@ ws.onmessage = function (message) {
             participants[parsedMessage.name].rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
                 if (error) {
                     console.error("Error adding candidate: " + error);
-                    return;
                 }
             });
             break;
         default:
             console.error('Unrecognized message', parsedMessage);
-    }
-}
+    }*/
+};
 
-function register() {
-    name = document.getElementById('name').value;
+export function register() {
+    /*name = document.getElementById('name').value;
     let password = document.getElementById('password').value;
     let isPrivate = !!document.getElementById('isPrivateRoom').checked;
     let roomSelector = document.getElementById('roomSelector');
@@ -56,18 +55,18 @@ function register() {
 
     document.getElementById('room-header').innerText = roomName;
     document.getElementById('join').style.display = 'none';
-    document.getElementById('room').style.display = 'block';
+    document.getElementById('room').style.display = 'block';*/
 
     sendMessage({
         id: 'joinRoom',
-        name: name,
-        password: password,
-        roomKey: secretKey,
-        isPrivateRoom: isPrivate,
+        name: 'name',
+        password: 'password',
+        roomKey: 'bar',
+        isPrivateRoom: 'isPrivate',
     });
 }
 
-function onNewParticipant(request) {
+/*function onNewParticipant(request) {
     receiveVideo(request.name);
 }
 
@@ -77,34 +76,22 @@ function receiveVideoResponse(result) {
     });
 }
 
-function callResponse(message) {
-    if (message.response != 'accepted') {
-        console.info('Call not accepted by peer. Closing call');
-        stop();
-    } else {
-        webRtcPeer.processAnswer(message.sdpAnswer, function (error) {
-            if (error) return console.error(error);
-        });
-    }
-}
-
 function onExistingParticipants(msg) {
-    var constraints = {
+    let constraints = {
         audio: true,
-        video: false/*{
+        video: false/!*{
             mandatory : {
                 maxWidth : 320,
                 maxFrameRate : 15,
                 minFrameRate : 15
             }
-        }*/
+        }*!/
     };
-    console.log(name + " registered in room " + room);
-    var participant = new Participant(name);
+    let participant = new Participant(name);
     participants[name] = participant;
-    var video = participant.getVideoElement();
+    let video = participant.getVideoElement();
 
-    var options = {
+    let options = {
         localVideo: video,
         mediaConstraints: constraints,
         configuration: {
@@ -112,7 +99,7 @@ function onExistingParticipants(msg) {
             iceTransportPolicy: 'relay'
         },
         onicecandidate: participant.onIceCandidate.bind(participant)
-    }
+    };
     participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
         function (error) {
             if (error) {
@@ -129,7 +116,7 @@ function leaveRoom() {
         id: 'leaveRoom'
     });
 
-    for (var key in participants) {
+    for (let key in participants) {
         participants[key].dispose();
     }
 
@@ -140,28 +127,28 @@ function leaveRoom() {
 }
 
 function receiveVideo(sender) {
-    var participant = new Participant(sender);
+    let participant = new Participant(sender);
     participants[sender] = participant;
-    var video = participant.getVideoElement();
+    let video = participant.getVideoElement();
 
-    var options = {
+    let options = {
         remoteVideo: video,
         mediaConstraints: {
             audio: true,
-            video: false/*{
+            video: false/!*{
             mandatory : {
                 maxWidth : 320,
                 maxFrameRate : 15,
                 minFrameRate : 15
             }
-        }*/
+        }*!/
         },
         configuration: {
             iceServers: [{urls: 'turn:134.209.199.255', username: 'test', credential: 'test'}],
             iceTransportPolicy: 'relay'
         },
         onicecandidate: participant.onIceCandidate.bind(participant)
-    }
+    };
 
     participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
         function (error) {
@@ -174,17 +161,18 @@ function receiveVideo(sender) {
 
 function onParticipantLeft(request) {
     console.log('Participant ' + request.name + ' left');
-    var participant = participants[request.name];
+    let participant = participants[request.name];
     participant.dispose();
     delete participants[request.name];
-}
+}*/
 
 function sendMessage(message) {
-    var jsonMessage = JSON.stringify(message);
+    let jsonMessage = JSON.stringify(message);
     console.log('Senging message: ' + jsonMessage);
     ws.send(jsonMessage);
 }
 
+/*
 function showPrivateOptions() {
     let isPrivate = document.getElementById('isPrivateRoom');
     let userPassword = document.getElementById('password');
@@ -201,4 +189,4 @@ function showPrivateOptions() {
         selectors.style.visibility = "visible";
         userPassword.style.visibility = "hidden"
     }
-}
+}*/

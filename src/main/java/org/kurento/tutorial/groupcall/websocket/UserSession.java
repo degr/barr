@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.kurento.tutorial.groupcall.websocket;
 
 import com.google.gson.JsonObject;
@@ -36,9 +35,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-
 public class UserSession implements Closeable {
-    private static final Logger log = LoggerFactory.getLogger(UserSession.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserSession.class);
     @Getter
     private final String login;
     @Getter
@@ -73,7 +71,7 @@ public class UserSession implements Closeable {
                     session.sendMessage(new TextMessage(response.toString()));
                 }
             } catch (IOException e) {
-                log.debug(e.getMessage());
+                LOGGER.debug(e.getMessage());
             }
         });
     }
@@ -107,7 +105,7 @@ public class UserSession implements Closeable {
                         session.sendMessage(new TextMessage(response.toString()));
                     }
                 } catch (IOException e) {
-                    log.debug(e.getMessage());
+                    LOGGER.debug(e.getMessage());
                 }
             });
 
@@ -123,33 +121,33 @@ public class UserSession implements Closeable {
     }
 
     void cancelVideoFrom(final String senderName) {
-        log.debug("PARTICIPANT {}: canceling video reception from {}", this.login, senderName);
+        LOGGER.debug("PARTICIPANT {}: canceling video reception from {}", this.login, senderName);
         Optional.ofNullable(incomingMedia.remove(senderName))
                 .ifPresent(webRtcEndpoint -> webRtcEndpoint.release(new Continuation<Void>() {
                     @Override
                     public void onSuccess(Void result) {
-                        log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
+                        LOGGER.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
                                 UserSession.this.login, senderName);
                     }
 
                     @Override
                     public void onError(Throwable cause) {
-                        log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.login,
+                        LOGGER.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.login,
                                 senderName);
                     }
                 }));
-        log.debug("PARTICIPANT {}: removing endpoint for {}", this.login, senderName);
+        LOGGER.debug("PARTICIPANT {}: removing endpoint for {}", this.login, senderName);
 
     }
 
     @Override
     public void close() {
-        log.debug("PARTICIPANT {}: Releasing resources", this.login);
+        LOGGER.debug("PARTICIPANT {}: Releasing resources", this.login);
         for (Map.Entry<String, WebRtcEndpoint> remoteParticipantEntry : incomingMedia.entrySet()) {
 
             final String participantName = remoteParticipantEntry.getKey();
 
-            log.trace("PARTICIPANT {}: Released incoming EP for {}", this.login, participantName);
+            LOGGER.trace("PARTICIPANT {}: Released incoming EP for {}", this.login, participantName);
 
 
             final WebRtcEndpoint ep = remoteParticipantEntry.getValue();
@@ -158,13 +156,13 @@ public class UserSession implements Closeable {
 
                 @Override
                 public void onSuccess(Void result) {
-                    log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
+                    LOGGER.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
                             UserSession.this.login, participantName);
                 }
 
                 @Override
                 public void onError(Throwable cause) {
-                    log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.login,
+                    LOGGER.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.login,
                             participantName);
                 }
             });
@@ -174,12 +172,12 @@ public class UserSession implements Closeable {
 
             @Override
             public void onSuccess(Void result) {
-                log.trace("PARTICIPANT {}: Released outgoing EP", UserSession.this.login);
+                LOGGER.trace("PARTICIPANT {}: Released outgoing EP", UserSession.this.login);
             }
 
             @Override
             public void onError(Throwable cause) {
-                log.warn("USER {}: Could not release outgoing EP", UserSession.this.login);
+                LOGGER.warn("USER {}: Could not release outgoing EP", UserSession.this.login);
             }
         });
     }
