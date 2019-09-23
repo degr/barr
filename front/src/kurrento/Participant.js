@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+import {sendMessage} from "./conferenceroom";
 
 let PARTICIPANT_MAIN_CLASS = 'participant main';
 let PARTICIPANT_CLASS = 'participant';
@@ -26,6 +27,9 @@ let PARTICIPANT_CLASS = 'participant';
  *                        The tag of the new element will be 'video<name>'
  * @return
  */
+
+
+
 export function Participant(name) {
     this.name = name;
     let container = document.createElement('div');
@@ -38,7 +42,7 @@ export function Participant(name) {
     container.appendChild(video);
     container.appendChild(span);
     container.onclick = switchContainerClass;
-    document.getElementById('participants').appendChild(container);
+    /*document.getElementById('participants').appendChild(container);*/
 
     span.appendChild(document.createTextNode(name));
 
@@ -46,14 +50,14 @@ export function Participant(name) {
     video.autoplay = true;
     video.controls = false;
 
-    this.getVideoElement = function() {
+    this.getVideoElement = function () {
         return video;
     };
 
     function switchContainerClass() {
         if (container.className === PARTICIPANT_CLASS) {
             let elements = Array.prototype.slice.call(document.getElementsByClassName(PARTICIPANT_MAIN_CLASS));
-            elements.forEach(function(item) {
+            elements.forEach(function (item) {
                 item.className = PARTICIPANT_CLASS;
             });
 
@@ -67,12 +71,13 @@ export function Participant(name) {
         return !!(document.getElementsByClassName(PARTICIPANT_MAIN_CLASS)).length;
     }
 
-    this.offerToReceiveVideo = function(error, offerSdp){
-        if (error) return console.error ("sdp offer error");
+    this.offerToReceiveVideo = function (error, offerSdp) {
+        if (error) return console.error("sdp offer error");
         console.log('Invoking SDP offer callback function');
-        let msg =  { id : "receiveVideoFrom",
-            sender : name,
-            sdpOffer : offerSdp
+        let msg = {
+            id: "receiveVideoFrom",
+            sender: name,
+            sdpOffer: offerSdp
         };
         sendMessage(msg);
     };
@@ -89,9 +94,9 @@ export function Participant(name) {
         sendMessage(message);
     };
 
-    Object.defineProperty(this, 'rtcPeer', { writable: true});
+    Object.defineProperty(this, 'rtcPeer', {writable: true});
 
-    this.dispose = function() {
+    this.dispose = function () {
         console.log('Disposing participant ' + this.name);
         this.rtcPeer.dispose();
         container.parentNode.removeChild(container);

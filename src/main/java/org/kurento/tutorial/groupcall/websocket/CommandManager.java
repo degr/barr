@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,9 +28,8 @@ public class CommandManager {
     @PostConstruct
     private void init() {
         LOGGER.debug("Scanning commands...");
-        URL roomCommandUrl = ClasspathHelper.forClass(RoomCommand.class);
         Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(Collections.singletonList(roomCommandUrl)));
+                .setUrls(Collections.singletonList(ClasspathHelper.forClass(RoomCommand.class))));
         Set<Class<? extends RoomCommand>> subTypesOf = reflections.getSubTypesOf(RoomCommand.class);
         subTypesOf.stream()
                 .map(aClass -> aClass.getDeclaredAnnotation(Component.class))
@@ -42,7 +40,7 @@ public class CommandManager {
                     commandMap.put(s, bean);
                     LOGGER.debug("Available command: {} with id: {}", bean, s);
                 });
-        LOGGER.info("Found {} commands in package", commandMap.size());
+        LOGGER.info("Found {} commands", commandMap.size());
     }
 
     Optional<RoomCommand> getCommand(String commandId) {

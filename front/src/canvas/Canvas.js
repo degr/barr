@@ -4,7 +4,6 @@ import CANNON from 'cannon';
 import PointerControl from "./PointerControl";
 import FBXLoader from 'three-fbxloader-offical';
 import './Canvas.scss';
-import {register} from "../kurrento/conferenceroom";
 
 const pathBarAvatar = '/models/fbx/avatar_sit_bar_01.fbx';
 const pathTableAvatar = '/models/fbx/avatar_sit_table_01.fbx';
@@ -368,7 +367,6 @@ export default class Canvas extends React.Component {
             controls.update(Date.now() - time);
             renderer.render(scene, camera);
             time = Date.now();
-            console.log(controls.getLocation())
         }
     }
 
@@ -379,7 +377,6 @@ export default class Canvas extends React.Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevProps.location !== this.props.location) {
             if (!this.avatarIsLoaded) {
-                debugger;
                 let type = this.props.location.type;
                 let path;
                 switch (type) {
@@ -412,7 +409,6 @@ export default class Canvas extends React.Component {
                     this.avatarIsLoaded = true;
                 });
             }
-            register();
             const object = this.props.location;
             this.pointerControl.setPosition(object.x, object.y + 1.5, object.z);
         }

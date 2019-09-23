@@ -1,20 +1,30 @@
 
-
 .bar-map {
-    box-shadow: gray;
-    border: 2px solid rgba(32, 18, 5, 1);
-    border-radius: 5px;
-    position: absolute;
-    top: 100px;
-    left: 100px;
-    width: 57%;
-    height: 80%;
-    background-color: rgba(32, 18, 5, 0.7);
-  }
+  box-shadow: gray;
+  border: 2px solid rgba(32, 18, 5, 1);
+  border-radius: 5px;
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  width: 57%;
+  height: 80%;
+  background-color: rgba(32, 18, 5, 0.7);
+}
 
+.sign_in {
+  box-shadow: gray;
+  color: aliceblue;
+  border: 2px solid rgba(32, 18, 5, 1);
+  border-radius: 5px;
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  width: 57%;
+  height: 80%;
+  background-color: rgba(32, 18, 5, 0.7);
+}
 
-
-.btn_menu{
+.btn_menu {
   position: absolute;
   top: -10px;
   left: 10px;
@@ -24,10 +34,10 @@
   transform: scale(0.6, 0.6);
   background-repeat: no-repeat;
   background-color: transparent;
-  background-image: url("btn_menu.png");
+  background-image: url("../assets/btn_menu.png");
 }
 
-.btn_map{
+.btn_map {
   position: absolute;
   top: -10px;
   left: 60px;
@@ -37,10 +47,10 @@
   transform: scale(0.6, 0.6);
   background-repeat: no-repeat;
   background-color: transparent;
-  background-image: url("btn_map.png");
+  background-image: url("../assets/btn_map.png");
 }
 
-.btn_msg{
+.btn_msg {
   position: absolute;
   top: -10px;
   left: 110px;
@@ -49,10 +59,10 @@
   border: none;
   transform: scale(0.6, 0.6);
   background-color: transparent;
-  background-image: url("btn_msg.png");
+  background-image: url("../assets/btn_msg.png");
 }
 
-.btn_edit{
+.btn_edit {
   position: absolute;
   top: -10px;
   left: 170px;
@@ -61,10 +71,10 @@
   border: none;
   transform: scale(0.6, 0.6);
   background-color: transparent;
-  background-image: url("btn_edit.png");
+  background-image: url("../assets/btn_edit.png");
 }
 
-.btn_group{
+.btn_group {
   position: absolute;
   top: -10px;
   left: 230px;
@@ -73,10 +83,10 @@
   border: none;
   transform: scale(0.6, 0.6);
   background-color: transparent;
-  background-image: url("btn_group.png");
+  background-image: url("../assets/btn_group.png");
 }
 
-.btn_volume{
+.btn_volume {
   position: absolute;
   top: -10px;
   left: 290px;
@@ -85,21 +95,31 @@
   transform: scale(0.6, 0.6);
   border: none;
   background-color: transparent;
-  background-image: url("btn_volume.png");
+  background-image: url("../assets/btn_volume.png");
 }
 
-
-
+.btn_sign_in {
+  position: absolute;
+  top: -10px;
+  left: 340px;
+  height: 80px;
+  width: 80px;
+  transform: scale(0.6, 0.6);
+  border: none;
+  background-color: transparent;
+  background-image: url("../assets/btn_edit.png");
+}
 
 
 .layer {
-    background-color: rgba(0, 0, 0, 0.7);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
+
 .sit-position {
   font-size: 18px;
   color: white;

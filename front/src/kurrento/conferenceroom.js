@@ -1,4 +1,9 @@
-let ws = new WebSocket('wss://' + window.location.host + '/groupcall');
+import {Participant} from "./Participant";
+
+let kurentoUtils = require('kurento-utils');
+
+
+let ws = new WebSocket('wss://localhost/groupcall');
 let participants = {};
 let name;
 
@@ -9,8 +14,7 @@ window.onbeforeunload = function () {
 ws.onmessage = function (message) {
     let parsedMessage = JSON.parse(message.data);
     console.info('Received message: ' + message.data);
-
-    /*switch (parsedMessage.id) {
+    switch (parsedMessage.id) {
         case 'existingParticipants':
             onExistingParticipants(parsedMessage);
             break;
@@ -32,41 +36,51 @@ ws.onmessage = function (message) {
             break;
         default:
             console.error('Unrecognized message', parsedMessage);
-    }*/
+    }
 };
 
 export function register() {
-    /*name = document.getElementById('name').value;
-    let password = document.getElementById('password').value;
-    let isPrivate = !!document.getElementById('isPrivateRoom').checked;
-    let roomSelector = document.getElementById('roomSelector');
-
-    let secretRoomKey = document.getElementById('secretRoomKey').value;
-    let selectorValue = roomSelector.options[roomSelector.selectedIndex].value;
-    let roomName;
-    let secretKey;
-    if (secretRoomKey === "") {
-        secretKey = selectorValue;
-        roomName = selectorValue;
-    } else {
-        secretKey = secretRoomKey;
-        roomName = "Private room";
-    }
-
-    document.getElementById('room-header').innerText = roomName;
-    document.getElementById('join').style.display = 'none';
-    document.getElementById('room').style.display = 'block';*/
-
+    /*let isPrivate = !!document.getElementById('isPrivateRoom').checked;
+    isPrivate ? joinPrivateRoom() : joinPublicRoom();*/
+    debugger;
     sendMessage({
         id: 'joinRoom',
-        name: 'name',
-        password: 'password',
+        name: 'OlegSavik',
+        password: 'Savik',
         roomKey: 'bar',
-        isPrivateRoom: 'isPrivate',
     });
 }
 
-/*function onNewParticipant(request) {
+function joinPublicRoom() {
+    name = document.getElementById('name').value;
+    let roomSelector = document.getElementById('roomSelector');
+    let roomKey = roomSelector.options[roomSelector.selectedIndex].value;
+    document.getElementById('room-header').innerText = roomKey;
+    document.getElementById('join').style.display = 'none';
+    document.getElementById('room').style.display = 'block';
+    sendMessage({
+        id: 'joinRoom',
+        name: name,
+        roomKey: roomKey,
+    });
+}
+
+function joinPrivateRoom() {
+    name = document.getElementById('name').value;
+    let password = document.getElementById('password').value;
+    let secretKey = document.getElementById('secretRoomKey').value;
+    document.getElementById('room-header').innerText = "Private room";
+    document.getElementById('join').style.display = 'none';
+    document.getElementById('room').style.display = 'block';
+    sendMessage({
+        id: 'joinPrivateRoom',
+        name: name,
+        password: password,
+        roomKey: secretKey,
+    });
+}
+
+function onNewParticipant(request) {
     receiveVideo(request.name);
 }
 
@@ -79,13 +93,13 @@ function receiveVideoResponse(result) {
 function onExistingParticipants(msg) {
     let constraints = {
         audio: true,
-        video: false/!*{
+        video: false/*{
             mandatory : {
                 maxWidth : 320,
                 maxFrameRate : 15,
                 minFrameRate : 15
             }
-        }*!/
+        }*/
     };
     let participant = new Participant(name);
     participants[name] = participant;
@@ -135,13 +149,13 @@ function receiveVideo(sender) {
         remoteVideo: video,
         mediaConstraints: {
             audio: true,
-            video: false/!*{
+            video: false/*{
             mandatory : {
                 maxWidth : 320,
                 maxFrameRate : 15,
                 minFrameRate : 15
             }
-        }*!/
+        }*/
         },
         configuration: {
             iceServers: [{urls: 'turn:134.209.199.255', username: 'test', credential: 'test'}],
@@ -164,15 +178,14 @@ function onParticipantLeft(request) {
     let participant = participants[request.name];
     participant.dispose();
     delete participants[request.name];
-}*/
+}
 
-function sendMessage(message) {
+export function sendMessage(message) {
     let jsonMessage = JSON.stringify(message);
     console.log('Senging message: ' + jsonMessage);
     ws.send(jsonMessage);
 }
 
-/*
 function showPrivateOptions() {
     let isPrivate = document.getElementById('isPrivateRoom');
     let userPassword = document.getElementById('password');
@@ -189,4 +202,4 @@ function showPrivateOptions() {
         selectors.style.visibility = "visible";
         userPassword.style.visibility = "hidden"
     }
-}*/
+}

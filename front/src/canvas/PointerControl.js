@@ -44,7 +44,6 @@ export default class PointerControl {
         this.velocity = this.cannonBody.velocity;
 
 
-
         document.addEventListener('mousemove', e => this.onMouseMove(e), false);
         document.addEventListener('keydown', e => this.onKeyDown(e), false);
         document.addEventListener('keyup', e => this.onKeyUp(e), false);
@@ -56,7 +55,7 @@ export default class PointerControl {
         return this.yawObject;
     };
 
-    getDirection (targetVec) {
+    getDirection(targetVec) {
         targetVec.set(0, 0, -1);
         this.quat.multiplyVector3(targetVec);
     };
@@ -113,7 +112,7 @@ export default class PointerControl {
         }
     };
 
-    onMouseMove (event) {
+    onMouseMove(event) {
 
         if (!this.settings.enabled) return;
 
@@ -163,22 +162,22 @@ export default class PointerControl {
 
 
         this.yawObject.position.copy(this.cannonBody.position);
-        console.log(this.cannonBody.position);
     };
 
 
     setPosition(x, y, z) {
-        if(x !== undefined) {
+        if (x !== undefined) {
             this.cannonBody.position.x = x;
         }
-        if(y !== undefined) {
+        if (y !== undefined) {
             this.cannonBody.position.y = y;
         }
-        if(z !== undefined) {
+        if (z !== undefined) {
             this.cannonBody.position.z = z;
         }
         this.yawObject.position.copy(this.cannonBody.position);
     }
+
     getLocation() {
         return this.cannonBody.position;
     }
