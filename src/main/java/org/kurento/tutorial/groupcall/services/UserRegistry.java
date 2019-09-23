@@ -17,11 +17,12 @@
 package org.kurento.tutorial.groupcall.services;
 
 import org.kurento.tutorial.groupcall.websocket.UserSession;
+import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
+@Service
 public class UserRegistry {
     private final ConcurrentHashMap<String, UserSession> userSessionsByName;
     private final ConcurrentHashMap<String, UserSession> userSessionsById;

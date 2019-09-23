@@ -5,12 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
 import org.kurento.tutorial.groupcall.websocket.PrivateRoom;
 import org.kurento.tutorial.groupcall.websocket.Room;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@Service
 @Slf4j
 public class RoomManager {
     private final ConcurrentMap<String, Room> rooms;

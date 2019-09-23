@@ -10,7 +10,7 @@ import org.kurento.tutorial.groupcall.websocket.UserSession;
 import org.springframework.web.socket.WebSocketSession;
 
 @AllArgsConstructor
-public abstract class JoinRoomCommand {
+abstract class JoinRoomCommand {
     private final UserRegistry sessionRegistry;
     private final AuthorizationHandler authorizationHandler;
 

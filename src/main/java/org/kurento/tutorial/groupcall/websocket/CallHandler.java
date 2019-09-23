@@ -17,11 +17,12 @@
 package org.kurento.tutorial.groupcall.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -30,16 +31,12 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.util.Optional;
 
 @Slf4j
+@Component
+@AllArgsConstructor
 public class CallHandler extends TextWebSocketHandler {
     private final RoomManager roomManager;
     private final UserRegistry sessionRegistry;
-    @Autowired
-    private CommandManager commandManager;
-
-    public CallHandler(RoomManager roomManager, UserRegistry sessionRegistry) {
-        this.roomManager = roomManager;
-        this.sessionRegistry = sessionRegistry;
-    }
+    private final CommandManager commandManager;
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
