@@ -42,14 +42,13 @@ ws.onmessage = function (message) {
 export function register() {
     /*let isPrivate = !!document.getElementById('isPrivateRoom').checked;
     isPrivate ? joinPrivateRoom() : joinPublicRoom();*/
-    debugger;
     sendMessage({
         id: 'joinRoom',
-        name: 'OlegSavik',
-        password: 'Savik',
+        login: 'OlegSavik',
         roomKey: 'bar',
     });
 }
+
 
 function joinPublicRoom() {
     name = document.getElementById('name').value;
@@ -60,7 +59,7 @@ function joinPublicRoom() {
     document.getElementById('room').style.display = 'block';
     sendMessage({
         id: 'joinRoom',
-        name: name,
+        login: name,
         roomKey: roomKey,
     });
 }
@@ -74,7 +73,7 @@ function joinPrivateRoom() {
     document.getElementById('room').style.display = 'block';
     sendMessage({
         id: 'joinPrivateRoom',
-        name: name,
+        login: name,
         password: password,
         roomKey: secretKey,
     });

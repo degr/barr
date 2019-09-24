@@ -1,7 +1,7 @@
 package org.kurento.tutorial.groupcall.websocket.command;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
-import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
 import org.kurento.tutorial.groupcall.websocket.Room;
@@ -16,8 +16,11 @@ public class LeaveRoomCommand implements RoomCommand {
     private final UserRegistry userRegistry;
 
     @Override
-    public void execute(MessageDto messageDto, WebSocketSession socketSession) {
+    public void execute(ObjectNode nodes, WebSocketSession socketSession) {
         UserSession userSession = userRegistry.getBySession(socketSession);
+        if (userSession == null) {
+            return;
+        }
         final Room room = roomManager.getRoom(userSession.getRoomKey());
         room.leave(userSession);
         if (room.getRoomParticipantsSessions().isEmpty()) {

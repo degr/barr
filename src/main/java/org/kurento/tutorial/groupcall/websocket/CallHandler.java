@@ -16,10 +16,12 @@
  */
 package org.kurento.tutorial.groupcall.websocket;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.kurento.tutorial.groupcall.dto.MessageDto;
 import org.kurento.tutorial.groupcall.services.RoomManager;
 import org.kurento.tutorial.groupcall.services.UserRegistry;
 import org.springframework.stereotype.Component;
@@ -34,17 +36,19 @@ import java.util.Optional;
 @Component
 @AllArgsConstructor
 public class CallHandler extends TextWebSocketHandler {
+    private static final String ID = "id";
     private final RoomManager roomManager;
     private final UserRegistry sessionRegistry;
     private final CommandManager commandManager;
 
+    @SneakyThrows
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        MessageDto messageDto = objectMapper.readValue(message.getPayload(), MessageDto.class);
-        Optional.ofNullable(messageDto.getId())
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        ObjectNode node = new ObjectMapper().readValue(message.getPayload(), ObjectNode.class);
+        Optional.ofNullable(node.get(ID))
+                .map(JsonNode::textValue)
                 .flatMap(commandManager::getCommand)
-                .ifPresent(roomCommand -> roomCommand.execute(messageDto, session));
+                .ifPresent(roomCommand -> roomCommand.execute(node, session));
     }
 
     @Override

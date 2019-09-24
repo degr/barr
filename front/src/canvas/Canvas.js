@@ -4,6 +4,7 @@ import CANNON from 'cannon';
 import PointerControl from "./PointerControl";
 import FBXLoader from 'three-fbxloader-offical';
 import './Canvas.scss';
+import {register} from "../kurrento/conferenceroom";
 
 const pathBarAvatar = '/models/fbx/avatar_sit_bar_01.fbx';
 const pathTableAvatar = '/models/fbx/avatar_sit_table_01.fbx';
@@ -401,6 +402,7 @@ export default class Canvas extends React.Component {
                         break;
                     }
                 }
+                register();
                 scene.remove(avatar_01);
                 loadAvatar(path, this.props.location, function (mixer, avatar) {
                     mixer_01 = mixer;

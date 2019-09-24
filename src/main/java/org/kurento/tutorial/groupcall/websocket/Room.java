@@ -34,6 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class Room implements Closeable {
+    private static final String ID = "id";
+    private static final String NAME = "name";
+    private static final String DATA = "data";
     private final Map<String, UserSession> roomParticipantsSessions;
     @Getter
     private final MediaPipeline mediaPipeline;
@@ -68,8 +71,8 @@ public class Room implements Closeable {
 
     private void notifyRoomUsers(UserSession newParticipantSession) {
         final JsonObject newParticipantMsg = new JsonObject();
-        newParticipantMsg.addProperty("id", "newParticipantArrived");
-        newParticipantMsg.addProperty("name", newParticipantSession.getLogin());
+        newParticipantMsg.addProperty(ID, "newParticipantArrived");
+        newParticipantMsg.addProperty(NAME, newParticipantSession.getLogin());
 
         for (final UserSession userSession : roomParticipantsSessions.values()) {
             try {
@@ -84,8 +87,8 @@ public class Room implements Closeable {
         roomParticipantsSessions.remove(userSessionName);
         final JsonObject participantLeftJson = new JsonObject();
 
-        participantLeftJson.addProperty("id", "participantLeft");
-        participantLeftJson.addProperty("name", userSessionName);
+        participantLeftJson.addProperty(ID, "participantLeft");
+        participantLeftJson.addProperty(NAME, userSessionName);
 
         for (final UserSession participant : roomParticipantsSessions.values()) {
             try {
@@ -106,8 +109,9 @@ public class Room implements Closeable {
             }
         }
         final JsonObject existingParticipantsMsg = new JsonObject();
-        existingParticipantsMsg.addProperty("id", "existingParticipants");
-        existingParticipantsMsg.add("data", participantsArray);
+        existingParticipantsMsg.addProperty(ID, "existingParticipants");
+
+        existingParticipantsMsg.add(DATA, participantsArray);
         userSession.sendMessage(existingParticipantsMsg);
     }
 
