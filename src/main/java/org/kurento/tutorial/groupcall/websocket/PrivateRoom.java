@@ -42,17 +42,17 @@ public class PrivateRoom extends Room {
         return getRoomKey().equals(roomKey);
     }
 
-    private boolean isUserAuthorized(String userName, String userToken) {
-        if (Strings.isBlank(userToken)) {
+    private boolean isUserAuthorized(String userName, String login) {
+        if (Strings.isBlank(login)) {
             return false;
         }
         final Pattern compile = Pattern.compile(TOKEN_REGEX);
-        final Matcher matcher = compile.matcher(userToken);
+        final Matcher matcher = compile.matcher(login);
 
         if (!matcher.matches()) {
             return false;
         }
-        DecodedJWT decode = JWT.decode(userToken);
+        DecodedJWT decode = JWT.decode(login);
 
         Claim sub = decode.getClaim(SUBJECT_KEY);
         if (sub == null) {

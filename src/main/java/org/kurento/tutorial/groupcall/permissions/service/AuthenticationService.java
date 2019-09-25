@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthenticationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationService.class);
+    private static final String ID_KEY = "id";
     private static final String LOGIN_KEY = "login";
     private static final String TOKEN_KEY = "token";
     private static final String PERMISSIONS_KEY = "permissions";
@@ -49,7 +50,7 @@ public class AuthenticationService {
     private Map<Object, Object> authenticate(String login, String password) {
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(login, password));
         JwtUser principal = (JwtUser) authenticate.getPrincipal();
-
+        Long id = principal.getId();
         String username = principal.getUsername();
         Collection<String> roleNames = authenticate.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -57,6 +58,7 @@ public class AuthenticationService {
 
         String token = jwtTokenProvider.createToken(username, roleNames);
         Map<Object, Object> map = new HashMap<>();
+        map.put(ID_KEY, id);
         map.put(LOGIN_KEY, username);
         map.put(PERMISSIONS_KEY, roleNames);
         map.put(TOKEN_KEY, token);

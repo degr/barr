@@ -1,5 +1,6 @@
 package org.kurento.tutorial.groupcall.websocket;
 
+import org.apache.commons.lang3.StringUtils;
 import org.kurento.tutorial.groupcall.websocket.command.RoomCommand;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -26,15 +30,16 @@ public class CommandManager {
     }
 
     @PostConstruct
-    private void init() {
+    private void scan() {
         LOGGER.debug("Scanning commands...");
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(Collections.singletonList(ClasspathHelper.forClass(RoomCommand.class))));
         Set<Class<? extends RoomCommand>> subTypesOf = reflections.getSubTypesOf(RoomCommand.class);
         subTypesOf.stream()
+                .filter(aClass -> aClass.isAnnotationPresent(Component.class))
                 .map(aClass -> aClass.getDeclaredAnnotation(Component.class))
-                .filter(Objects::nonNull)
                 .map(Component::value)
+                .filter(StringUtils::isNotBlank)
                 .forEach(s -> {
                     RoomCommand bean = (RoomCommand) applicationContext.getBean(s);
                     commandMap.put(s, bean);
