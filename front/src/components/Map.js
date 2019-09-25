@@ -25,13 +25,11 @@ export default class Map extends React.Component {
     };
 
     render() {
-
         const barMap =
             <div className="bar-map">
                 {DefaultLocations
                     .map((v, i) => <SitPosition key={i} data={v} changePosition={this.changePosition}/>)}
             </div>;
-
         const signIn =
             <div className="bar-map">
                 <SignIn login={this.state.login} password={this.state.password}

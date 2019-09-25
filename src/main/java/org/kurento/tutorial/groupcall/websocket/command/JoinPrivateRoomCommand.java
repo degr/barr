@@ -26,7 +26,6 @@ public class JoinPrivateRoomCommand extends JoinRoomCommand implements RoomComma
     @Override
     public void execute(@NotNull ObjectNode nodes, @NotNull WebSocketSession socketSession) {
         super.joinRoom(nodes, socketSession, key -> getOptionalRoom(key).orElseThrow(UnsupportedOperationException::new));
-
     }
 
     private Optional<Room> getOptionalRoom(String roomKey) {
