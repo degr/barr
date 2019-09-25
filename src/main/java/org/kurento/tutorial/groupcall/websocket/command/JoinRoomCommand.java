@@ -19,7 +19,7 @@ abstract class JoinRoomCommand {
     private static final String TOKEN_KEY = "token";
     private final UserRegistry userRegistry;
 
-    public JoinRoomCommand(UserRegistry userRegistry) {
+    JoinRoomCommand(UserRegistry userRegistry) {
         this.userRegistry = userRegistry;
     }
 
