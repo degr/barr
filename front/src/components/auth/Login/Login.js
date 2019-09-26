@@ -2,7 +2,7 @@ import React from 'react'
 import {Field, reduxForm} from "redux-form";
 import {connect} from "react-redux";
 import {NavLink, Redirect} from "react-router-dom";
-import {signIn} from "../../../redux/AuthReducer";
+import {signIn} from "../../../redux/reducers/authReducer";
 import {maxLengthCreator, minLengthCreator, requiredField} from "../../../utils/validators";
 import {Input} from "../AuthUtils";
 
@@ -12,6 +12,10 @@ const LoginForm = (props) => {
             <div className="container-login100">
                 <div className="wrap-login100 p-t-85 p-b-20">
                     <form className="login100-form validate-form" onSubmit={props.handleSubmit}>
+					        <span className="login100-form-title p-b-70">
+                                Welcome
+					        </span>
+
                         <div className="wrap-input100 validate-input m-t-85 m-b-35" data-validate="Enter username">
                             <Field className="input100" type="text" name="username" component={Input}
                                    textVal='login'
@@ -20,7 +24,8 @@ const LoginForm = (props) => {
 
                         <div className="wrap-input100 validate-input m-b-50" data-validate="Enter password">
                             <Field className="input100" type="password" name="password"
-                                   textVal='password' component={Input}
+                                   component={Input}
+                                   textVal='password'
                                    validate={[requiredField, minLength5, maxLength255]}/>
                         </div>
 
@@ -33,7 +38,7 @@ const LoginForm = (props) => {
                         <ul className="login-more p-t-190">
                             <li>
 							        <span className="txt1">
-                                        Don't have account
+                                        don't have an account?
 							        </span>
                                 <NavLink to={'signUp'} className="txt2">
                                     Sign Up
@@ -57,7 +62,7 @@ const Login = (props) => {
         props.signIn(formData.username, formData.password)
     };
     return (
-        props.token ? <Redirect to={"/users"}/> :
+        props.token ? <Redirect to={"/"}/> :
             <div>
                 <LoginReduxForm onSubmit={onSubmit}/>
             </div>

@@ -8,8 +8,8 @@ import org.springframework.web.socket.WebSocketSession;
 
 import javax.validation.constraints.NotNull;
 
-@Component("joinRoom")
-public class JoinPublicRoomCommand extends JoinRoomCommand implements RoomCommand {
+@Component("joinPublicRoom")
+public class JoinPublicRoomCommand extends BaseJoinRoomCommand implements RoomCommand {
     private final RoomManager roomManager;
 
     public JoinPublicRoomCommand(UserRegistry userRegistry, RoomManager roomManager) {

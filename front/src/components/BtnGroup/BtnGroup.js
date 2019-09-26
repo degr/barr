@@ -1,4 +1,5 @@
 import React from "react";
+import {NavLink} from "react-router-dom";
 
 const BtnGroup = (props) => {
     return (
@@ -9,7 +10,10 @@ const BtnGroup = (props) => {
             <button className="btn_edit"/>
             <button className="btn_group"/>
             <button className="btn_volume"/>
-            <button className="btn_sign_in" onClick={props.showSignIn}/>
+            <NavLink to={'login'}>
+                <button className="btn_sign_in"/>
+            </NavLink>
+            {props.login}
         </>
     )
 };

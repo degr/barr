@@ -1,20 +1,18 @@
-import {localizeText, localizeTextWithParams} from "../translator/Translator";
-
 export const requiredField = value => {
-    let requiredFieldErrorMsg = localizeText('field_required');
+    let requiredFieldErrorMsg = 'Field required';
     if (value) return undefined;
     return requiredFieldErrorMsg;
 };
 
 export const maxLengthCreator = (maxValue) => value => {
-    let maxValueErrorMsg = localizeTextWithParams("max_length {value}", {value: maxValue});
+    let maxValueErrorMsg = 'input is too big ' + maxValue;
     if (value && value.length > maxValue) {
         return maxValueErrorMsg;
     }
     return undefined;
 };
 export const minLengthCreator = (minValue) => value => {
-    let minValueErrorMsg = localizeTextWithParams("min_length {value}", {value: minValue});
+    let minValueErrorMsg = 'input string is too short ' + minValue;
     if (value && value.length < minValue) {
         return minValueErrorMsg;
     }
@@ -23,6 +21,6 @@ export const minLengthCreator = (minValue) => value => {
 
 export const passwordsMustMatch = (value, allValues) => {
     return value !== allValues.password ?
-        localizeText('pass_doesnt_match') :
+        "localizeText('pass_doesnt_match')" :
         undefined;
 };

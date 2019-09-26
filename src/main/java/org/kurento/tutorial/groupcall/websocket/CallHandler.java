@@ -53,9 +53,11 @@ public class CallHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        UserSession user = sessionRegistry.removeBySession(session);
-        String roomName = user.getRoomKey();
-        Optional.ofNullable(roomManager.getRoom(roomName))
-                .ifPresent(room -> room.leave(user));
+        Optional.ofNullable(sessionRegistry.removeBySession(session))
+                .ifPresent(user -> {
+                    String roomName = user.getRoomKey();
+                    Optional.ofNullable(roomManager.getRoom(roomName))
+                            .ifPresent(room -> room.leave(user));
+                });
     }
 }

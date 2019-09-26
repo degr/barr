@@ -13,18 +13,18 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-abstract class JoinRoomCommand {
+abstract class BaseJoinRoomCommand {
     private static final String LOGIN_KEY = "login";
     private static final String ROOM_KEY = "roomKey";
     private static final String TOKEN_KEY = "token";
     private final UserRegistry userRegistry;
 
-    JoinRoomCommand(UserRegistry userRegistry) {
+    BaseJoinRoomCommand(UserRegistry userRegistry) {
         this.userRegistry = userRegistry;
     }
 
     @SneakyThrows
-    void joinRoom(ObjectNode nodes, WebSocketSession socketSession, Function<String, Room> function) {
+    void joinRoom(ObjectNode nodes, WebSocketSession socketSession, Function<String, Room> roomExtractor) {
         UnaryOperator<String> operator = key -> Optional.ofNullable(nodes.get(key))
                 .map(JsonNode::textValue)
                 .orElse(Strings.EMPTY);
@@ -33,7 +33,7 @@ abstract class JoinRoomCommand {
         String token = operator.apply(TOKEN_KEY);
         String roomKey = operator.apply(ROOM_KEY);
 
-        Room room = function.apply(roomKey);
+        Room room = roomExtractor.apply(roomKey);
         UserSession userSession = new UserSession(login, token, room.getRoomKey(), socketSession, room.getMediaPipeline());
         room.join(userSession);
         userRegistry.register(userSession);

@@ -15,7 +15,7 @@ import java.util.Optional;
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 @Component("joinPrivateRoom")
-public class JoinPrivateRoomCommand extends JoinRoomCommand implements RoomCommand {
+public class JoinPrivateRoomCommand extends BaseJoinRoomCommand implements RoomCommand {
     private final RoomManager roomManager;
 
     public JoinPrivateRoomCommand(UserRegistry userRegistry, RoomManager roomManager) {

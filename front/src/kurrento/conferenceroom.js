@@ -1,4 +1,6 @@
 import {Participant} from "./Participant";
+import {getStore} from "../index";
+import {setAuthUserData} from "../redux/reducers/authReducer";
 
 let kurentoUtils = require('kurento-utils');
 
@@ -28,68 +30,82 @@ ws.onmessage = function (message) {
             receiveVideoResponse(parsedMessage);
             break;
         case 'iceCandidate':
-            participants[parsedMessage.name].rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
-                if (error) {
-                    console.error("Error adding candidate: " + error);
-                }
-            });
+            addIceCandidate(parsedMessage);
+            break;
+        case 'signIn':
+            authorize(parsedMessage.payload);
+            break;
+        case 'signUp':
+            authorize(parsedMessage.payload);
             break;
         default:
             console.error('Unrecognized message', parsedMessage);
     }
 };
 
-export function register() {
-    /*let isPrivate = !!document.getElementById('isPrivateRoom').checked;
-    isPrivate ? joinPrivateRoom() : joinPublicRoom();*/
-    sendMessage({
-        id: 'joinRoom',
-        login: 'OlegSavik',
-        roomKey: 'bar',
+function addIceCandidate(parsedMessage) {
+    participants[parsedMessage.name].rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
+        if (error) {
+            console.error("Error adding candidate: " + error);
+        }
     });
 }
 
-
-function joinPublicRoom() {
-    name = document.getElementById('name').value;
-    let roomSelector = document.getElementById('roomSelector');
-    let roomKey = roomSelector.options[roomSelector.selectedIndex].value;
-    document.getElementById('room-header').innerText = roomKey;
-    document.getElementById('join').style.display = 'none';
-    document.getElementById('room').style.display = 'block';
-    sendMessage({
-        id: 'joinRoom',
-        login: name,
-        roomKey: roomKey,
-    });
+function authorize(payload) {
+    debugger;
+    getStore().dispatch(setAuthUserData(payload.id, payload.login, payload.token, payload.permissions, true));
 }
 
-function joinPrivateRoom() {
-    name = document.getElementById('name').value;
-    let password = document.getElementById('password').value;
-    let secretKey = document.getElementById('secretRoomKey').value;
-    document.getElementById('room-header').innerText = "Private room";
-    document.getElementById('join').style.display = 'none';
-    document.getElementById('room').style.display = 'block';
-    sendMessage({
-        id: 'joinPrivateRoom',
-        login: name,
-        password: password,
-        roomKey: secretKey,
-    });
+export const joinRoomApi = {
+    joinPublicRoom(login, roomKey) {
+        sendMessage({
+            id: 'joinPublicRoom',
+            login: login,
+            roomKey: roomKey
+        });
+    },
+
+    joinPrivateRoom(login, token, roomKey) {
+        sendMessage({
+            id: 'joinPrivateRoom',
+            login: login,
+            token: token,
+            roomKey: roomKey,
+        });
+    }
+};
+export const authApi = {
+
+    signIn(login, password) {
+
+        debugger;
+        sendMessage({
+            id: 'signIn',
+            login: login,
+            password: password
+        })
+    },
+
+    signUp(login, password) {
+        sendMessage({
+            id: 'signUp',
+            login: login,
+            password: password
+        })
+    }
+};
+
+function onNewParticipant(parsedMessage) {
+    receiveVideo(parsedMessage.name);
 }
 
-function onNewParticipant(request) {
-    receiveVideo(request.name);
-}
-
-function receiveVideoResponse(result) {
-    participants[result.name].rtcPeer.processAnswer(result.sdpAnswer, function (error) {
+function receiveVideoResponse(parsedMessage) {
+    participants[parsedMessage.name].rtcPeer.processAnswer(parsedMessage.sdpAnswer, function (error) {
         if (error) return console.error(error);
     });
 }
 
-function onExistingParticipants(msg) {
+function onExistingParticipants(parsedMessage) {
     let constraints = {
         audio: true,
         video: false/*{
@@ -121,7 +137,7 @@ function onExistingParticipants(msg) {
             this.generateOffer(participant.offerToReceiveVideo.bind(participant));
         });
 
-    msg.data.forEach(receiveVideo);
+    parsedMessage.data.forEach(receiveVideo);
 }
 
 function leaveRoom() {
@@ -172,33 +188,15 @@ function receiveVideo(sender) {
         });
 }
 
-function onParticipantLeft(request) {
-    console.log('Participant ' + request.name + ' left');
-    let participant = participants[request.name];
+function onParticipantLeft(parsedMessage) {
+    console.log('Participant ' + parsedMessage.name + ' left');
+    let participant = participants[parsedMessage.name];
     participant.dispose();
-    delete participants[request.name];
+    delete participants[parsedMessage.name];
 }
 
 export function sendMessage(message) {
     let jsonMessage = JSON.stringify(message);
     console.log('Senging message: ' + jsonMessage);
     ws.send(jsonMessage);
-}
-
-function showPrivateOptions() {
-    let isPrivate = document.getElementById('isPrivateRoom');
-    let userPassword = document.getElementById('password');
-
-    let secret = document.getElementById('secretRoomKey');
-    let selectors = document.getElementById('selectors');
-
-    if (isPrivate.checked) {
-        secret.style.visibility = "visible";
-        selectors.style.visibility = "hidden";
-        userPassword.style.visibility = "visible"
-    } else {
-        secret.style.visibility = "hidden";
-        selectors.style.visibility = "visible";
-        userPassword.style.visibility = "hidden"
-    }
 }

@@ -41,9 +41,9 @@ public class CommandManager {
                 .map(Component::value)
                 .filter(StringUtils::isNotBlank)
                 .forEach(s -> {
-                    RoomCommand bean = (RoomCommand) applicationContext.getBean(s);
-                    commandMap.put(s, bean);
-                    LOGGER.debug("Available command: {} with id: {}", bean, s);
+                    RoomCommand roomCommand = (RoomCommand) applicationContext.getBean(s);
+                    commandMap.put(s, roomCommand);
+                    LOGGER.debug("Available command: {} with id: {}", roomCommand, s);
                 });
         LOGGER.info("Found {} commands", commandMap.size());
     }
