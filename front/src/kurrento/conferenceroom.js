@@ -52,7 +52,6 @@ function addIceCandidate(parsedMessage) {
 }
 
 function authorize(payload) {
-    debugger;
     getStore().dispatch(setAuthUserData(payload.id, payload.login, payload.token, payload.permissions, true));
 }
 
@@ -77,8 +76,6 @@ export const joinRoomApi = {
 export const authApi = {
 
     signIn(login, password) {
-
-        debugger;
         sendMessage({
             id: 'signIn',
             login: login,

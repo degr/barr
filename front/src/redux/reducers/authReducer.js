@@ -15,7 +15,6 @@ const authReducer = (state = initialState, action) => {
     let stateCopy = {...state};
     switch (action.type) {
         case SET_USER_DATA: {
-            debugger;
             stateCopy.id = action.payload.id;
             stateCopy.login = action.payload.login;
             stateCopy.token = action.payload.token;
@@ -41,7 +40,6 @@ export const setAuthUserData = (id, login, token, permissions, isAuth) => ({
 });
 
 export const signIn = (login, password) => {
-    debugger;
     return () => {
         authApi.signIn(login, password);
     }

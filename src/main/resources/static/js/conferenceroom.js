@@ -24,7 +24,6 @@ window.onbeforeunload = function () {
 };
 
 ws.onmessage = function (message) {
-    debugger;
     var parsedMessage = JSON.parse(message.data);
     console.info('Received message: ' + message.data);
 

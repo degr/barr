@@ -18,7 +18,6 @@ class Map extends React.Component {
     }
 
     render() {
-        debugger;
         const barMap =
             <div className="bar-map">
                 {DefaultLocations
