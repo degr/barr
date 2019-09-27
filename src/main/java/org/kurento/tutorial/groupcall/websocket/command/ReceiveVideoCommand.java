@@ -8,6 +8,8 @@ import org.kurento.tutorial.groupcall.websocket.UserSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.util.function.UnaryOperator;
+
 @AllArgsConstructor
 @Component("receiveVideoFrom")
 public class ReceiveVideoCommand implements RoomCommand {
@@ -18,13 +20,14 @@ public class ReceiveVideoCommand implements RoomCommand {
     @SneakyThrows
     @Override
     public void execute(ObjectNode nodes, WebSocketSession socketSession) {
+        UnaryOperator<String> operator = valueExtractor(nodes);
         UserSession userSession = userRegistry.getBySession(socketSession);
         if (userSession == null) {
             return;
         }
-        final String senderName = nodes.get(SENDER).textValue();
+        final String senderName = operator.apply(SENDER);
         final UserSession senderUserSession = userRegistry.getByName(senderName);
-        final String sdpOffer = nodes.get(SDP_OFFER).textValue();
+        final String sdpOffer = operator.apply(SDP_OFFER);
         userSession.receiveVideoFrom(senderUserSession, sdpOffer);
     }
 }

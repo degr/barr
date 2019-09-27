@@ -10,6 +10,8 @@ import org.kurento.tutorial.groupcall.websocket.UserSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.util.function.UnaryOperator;
+
 @AllArgsConstructor
 @Component("onIceCandidate")
 public class OnIceCandidateCommand implements RoomCommand {
@@ -32,8 +34,9 @@ public class OnIceCandidateCommand implements RoomCommand {
     }
 
     private IceCandidate parse(JsonNode jsonNode) {
-        String candidateName = jsonNode.get(CANDIDATE).textValue();
-        String sdpMid = jsonNode.get(SDP_MID).textValue();
+        UnaryOperator<String> operator = valueExtractor(jsonNode);
+        String candidateName = operator.apply(CANDIDATE);
+        String sdpMid = operator.apply(SDP_MID);
         int sdpMLineIndex = jsonNode.get(SDP_MLINE_INDEX).asInt();
         return new IceCandidate(candidateName, sdpMid, sdpMLineIndex);
     }

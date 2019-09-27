@@ -29,10 +29,8 @@ abstract class BaseAuthCommand implements RoomCommand {
         return formJsonResponse(authMap);
     }
 
-    private Map<Object, Object> auth(ObjectNode sourceNode, Function<UserDTO, Map<Object, Object>> function) {
-        UnaryOperator<String> operator = key -> Optional.ofNullable(sourceNode.get(key))
-                .map(JsonNode::textValue)
-                .orElse(Strings.EMPTY);
+    private Map<Object, Object> auth(ObjectNode nodes, Function<UserDTO, Map<Object, Object>> function) {
+        UnaryOperator<String> operator = valueExtractor(nodes);
         String login = operator.apply(LOGIN);
         String password = operator.apply(PASSWORD);
 
