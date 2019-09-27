@@ -20,9 +20,14 @@ class Menu extends React.Component {
     }
 
     changePosition = (data) => {
+        let payload = {
+            location: data,
+            type: data.type,
+            login: this.props.login
+        };
         this.setState(
             {showMap: false},
-            () => this.props.setLocation(data),
+            () => this.props.setRoom(payload),
         );
     }
 }

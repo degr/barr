@@ -1,16 +1,14 @@
 import {Participant} from "./Participant";
 import {getStore} from "../index";
-import {setRoomParticipants} from "../redux/reducers/roomReducer";
+import {addParticipant, removeParticipant, setRoomParticipants} from "../redux/reducers/roomReducer";
 import {closeConnection, sendMessage} from "./messageHandler";
 
 let kurentoUtils = require('kurento-utils');
 
-
-let participants = {};
-let name;
-
 export function addIceCandidate(parsedMessage) {
-    participants[parsedMessage.name].rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
+    debugger;
+    let participant = findParticipantByName(parsedMessage.name);
+    participant.rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
         if (error) {
             console.error("Error adding candidate: " + error);
         }
@@ -22,18 +20,23 @@ export function onNewParticipant(parsedMessage) {
 }
 
 export function receiveVideoResponse(parsedMessage) {
-    participants[parsedMessage.name].rtcPeer.processAnswer(parsedMessage.sdpAnswer, function (error) {
+    debugger;
+    let participant = findParticipantByName(parsedMessage.name);
+    participant.rtcPeer.processAnswer(parsedMessage.sdpAnswer, function (error) {
         if (error) return console.error(error);
     });
 }
 
 export function onExistingParticipants(parsedMessage) {
+    let name = getStore().getState().authPage.login;
+    dispatch(setRoomParticipants(name, parsedMessage.data));
     let constraints = {
         audio: true,
         video: false
     };
     let participant = new Participant(name);
-    participants[name] = participant;
+    dispatch(addParticipant(participant));
+
     let video = participant.getVideoElement();
 
     let options = {
@@ -54,25 +57,24 @@ export function onExistingParticipants(parsedMessage) {
         });
 
     parsedMessage.data.forEach(receiveVideo);
-    getStore().dispatch(setRoomParticipants(name, parsedMessage.data))
 }
 
 export function leaveRoom() {
     sendMessage({
         id: 'leaveRoom'
     });
-
+    let participants = getParticipants();
     for (let key in participants) {
-        participants[key].dispose();
+        let participant = participants[key];
+        participant.dispose();
+        dispatch(removeParticipant(participant))
     }
-    document.getElementById('join').style.display = 'block';
-    document.getElementById('room').style.display = 'none';
     closeConnection();
 }
 
 function receiveVideo(sender) {
     let participant = new Participant(sender);
-    participants[sender] = participant;
+    dispatch(addParticipant(participant));
     let video = participant.getVideoElement();
 
     let options = {
@@ -97,8 +99,25 @@ function receiveVideo(sender) {
 }
 
 export function onParticipantLeft(parsedMessage) {
+    debugger;
     console.log('Participant ' + parsedMessage.name + ' left');
-    let participant = participants[parsedMessage.name];
+    let participant = findParticipantByName(parsedMessage.name);
+
     participant.dispose();
-    delete participants[parsedMessage.name];
+    dispatch(removeParticipant(participant));
+}
+
+function dispatch(command) {
+    getStore().dispatch(command);
+}
+
+function findParticipantByName(name) {
+    debugger;
+    let participants = getParticipants();
+    return participants.find(participant => participant.name === name);
+}
+
+function getParticipants() {
+    let roomPage = getStore().getState().roomPage;
+    return [...roomPage.participants];
 }

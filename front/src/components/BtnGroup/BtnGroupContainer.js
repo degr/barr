@@ -6,6 +6,6 @@ import {signOut} from "../../redux/reducers/authReducer";
 const BtnGroupContainer = props => (<BtnGroup {...props}/>);
 
 const mapStateToProps = (state) => ({
-    login: state.auth.login,
+    login: state.authPage.login,
 });
 export default connect(mapStateToProps, {signOut})(BtnGroupContainer);

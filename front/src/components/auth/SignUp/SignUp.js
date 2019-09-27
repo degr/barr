@@ -77,6 +77,6 @@ const SignUp = (props) => {
     )
 };
 const mapStateToProps = (state) => ({
-    token: state.auth.token
+    token: state.authPage.token
 });
 export default connect(mapStateToProps, {signUp})(SignUp);

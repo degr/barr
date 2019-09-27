@@ -1,5 +1,4 @@
 import {getStore} from "../index";
-import {setRoomData} from "../redux/reducers/roomReducer";
 import {sendMessage} from "../kurrento/messageHandler";
 import {setAuthUserData} from "../redux/reducers/authReducer";
 
@@ -10,7 +9,6 @@ export const roomApi = {
             login: login,
             roomKey: roomKey
         });
-        setRoomInfo(roomKey, false);
     },
 
     joinPrivateRoom(login, token, roomKey) {
@@ -20,16 +18,10 @@ export const roomApi = {
             token: token,
             roomKey: roomKey,
         });
-        setRoomInfo(roomKey, true);
     },
 
 
 };
-
-function setRoomInfo(roomKey, isPrivate) {
-    getStore().dispatch(setRoomData(roomKey, isPrivate));
-}
-
 export const authApi = {
     signIn(login, password) {
         sendMessage({

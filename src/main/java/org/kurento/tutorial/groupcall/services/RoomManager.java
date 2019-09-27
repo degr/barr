@@ -26,8 +26,8 @@ public class RoomManager {
     @PostConstruct
     private void init() {
         createRoom("bar", 10);
-        createRoom("table1", 4);
-        createRoom("table2", 4);
+        createRoom("tableWithLamp", 4);
+        createRoom("tableInTheShadow", 4);
         createRoom("sofa", 6);
     }
 

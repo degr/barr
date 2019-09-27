@@ -1,21 +1,13 @@
 import React, {Component} from 'react';
-import './App.css';
+import '../App.css';
 import {Route} from "react-router-dom";
-import Login from "./components/auth/Login/Login";
-import SignUp from "./components/auth/SignUp/SignUp";
-import JoinPrivateRoom from "./components/BtnGroup/JoinPrivateRoomForm/JoinPrivateRoomForm";
-import MenuContainer from "./components/Menu/MenuContainer";
-import CanvasContainer from "./canvas/CanvasContainer";
+import Login from "./auth/Login/Login";
+import SignUp from "./auth/SignUp/SignUp";
+import JoinPrivateRoom from "./BtnGroup/JoinPrivateRoomForm/JoinPrivateRoomForm";
+import MenuContainer from "./Menu/MenuContainer";
+import CanvasContainer from "./../canvas/CanvasContainer";
 
 class App extends Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            location: null
-        }
-    }
-
     render() {
         return (
             <div>

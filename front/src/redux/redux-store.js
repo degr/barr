@@ -6,7 +6,7 @@ import roomReducer from "./reducers/roomReducer";
 
 let reducers = combineReducers(
     {
-        auth: authReducer,
+        authPage: authReducer,
         roomPage:roomReducer,
         form: formReducer
     }

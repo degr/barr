@@ -11,15 +11,15 @@ export default [
     {x: 2.702, y: 0, z: -1.184, a: -Math.PI / 2.9, type: 'bar', id: 8},
     {x: 3.1, y: 0, z: -2.38, a: -Math.PI / 2.4, type: 'bar', id: 9},
 
-    {x: -3.89, y: 0, z: 2.11, a: -Math.PI, type: 'table1', id: 0},
-    {x: -3.775, y: 0, z: 3.1, a: -Math.PI / 2, type: 'table1', id: 1},
-    {x: -4.88, y: 0, z: 3.16, a: 0, type: 'table1', id: 2},
-    {x: -4.848, y: 0, z: 2.242, a: Math.PI / 2, type: 'table1', id: 3},
+    {x: -3.89, y: 0, z: 2.11, a: -Math.PI, type: 'tableWithLamp', id: 0},
+    {x: -3.775, y: 0, z: 3.1, a: -Math.PI / 2, type: 'tableWithLamp', id: 1},
+    {x: -4.88, y: 0, z: 3.16, a: 0, type: 'tableWithLamp', id: 2},
+    {x: -4.848, y: 0, z: 2.242, a: Math.PI / 2, type: 'tableWithLamp', id: 3},
 
-    {x: -3.8, y: 0, z: 4.388, a: -Math.PI , type: 'table2', id: 0},
-    {x: -3.8, y: 0, z: 5.47, a: -Math.PI / 2, type: 'table2', id: 1},
-    {x: -4.87, y: 0, z: 5.47, a: 0, type: 'table2', id: 2},
-    {x: -4.87, y: 0, z: 4.49, a: Math.PI / 2, type: 'table2', id: 3},
+    {x: -3.8, y: 0, z: 4.388, a: -Math.PI , type: 'tableInTheShadow', id: 0},
+    {x: -3.8, y: 0, z: 5.47, a: -Math.PI / 2, type: 'tableInTheShadow', id: 1},
+    {x: -4.87, y: 0, z: 5.47, a: 0, type: 'tableInTheShadow', id: 2},
+    {x: -4.87, y: 0, z: 4.49, a: Math.PI / 2, type: 'tableInTheShadow', id: 3},
 
 
     {x: 1.867, y: 0, z: 3.76, a: Math.PI / 2, type: 'sofa', id: 0},
