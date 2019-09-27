@@ -1,6 +1,7 @@
 import {Participant} from "./Participant";
 import {getStore} from "../index";
 import {setAuthUserData} from "../redux/reducers/authReducer";
+import {setRoomData, setRoomUsers} from "../redux/reducers/roomReducer";
 
 let kurentoUtils = require('kurento-utils');
 
@@ -52,16 +53,19 @@ function addIceCandidate(parsedMessage) {
 }
 
 function authorize(payload) {
+    //TODO
+    /*setUserData(payload.id, payload.login, payload.token, payload.permissions, true);*/
     getStore().dispatch(setAuthUserData(payload.id, payload.login, payload.token, payload.permissions, true));
 }
 
-export const joinRoomApi = {
+export const roomApi = {
     joinPublicRoom(login, roomKey) {
         sendMessage({
             id: 'joinPublicRoom',
             login: login,
             roomKey: roomKey
         });
+        setRoomData(roomKey, false);
     },
 
     joinPrivateRoom(login, token, roomKey) {
@@ -71,10 +75,15 @@ export const joinRoomApi = {
             token: token,
             roomKey: roomKey,
         });
+        setRoomData(roomKey, true);
+    },
+
+    setRoomDate(roomKey, isPrivate) {
+        getStore().dispatch(setRoomData(roomKey, isPrivate));
     }
+
 };
 export const authApi = {
-
     signIn(login, password) {
         sendMessage({
             id: 'signIn',
@@ -135,6 +144,7 @@ function onExistingParticipants(parsedMessage) {
         });
 
     parsedMessage.data.forEach(receiveVideo);
+    getStore().dispatch(setRoomUsers(name, parsedMessage.data))
 }
 
 function leaveRoom() {

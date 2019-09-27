@@ -4,12 +4,17 @@ import {NavLink} from "react-router-dom";
 const BtnGroup = (props) => {
     return (
         <>
-            <button className="btn_menu"/>
+            <NavLink to={'/'}>
+                <button className="btn_menu"/>
+            </NavLink>
             <button className="btn_map" onClick={props.showMap}/>
             <button className="btn_msg"/>
             <button className="btn_edit"/>
-            <button className="btn_group"/>
+            <NavLink to={'joinPrivateRoom'}>
+                <button className="btn_group"/>
+            </NavLink>
             <button className="btn_volume"/>
+            <hr/>
             <NavLink to={'login'}>
                 <button className="btn_sign_in"/>
             </NavLink>

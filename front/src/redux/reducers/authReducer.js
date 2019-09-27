@@ -34,14 +34,22 @@ const authReducer = (state = initialState, action) => {
     return stateCopy;
 };
 
+export const setUserData = (id, login, token, permissions, isAuth) => {
+    return (dispatch) => {
+        dispatch(setAuthUserData(id, login, token, permissions, isAuth));
+        dispatch(setFetching(false));
+    }
+};
+
 export const setAuthUserData = (id, login, token, permissions, isAuth) => ({
     type: SET_USER_DATA,
     payload: {id, login, token, permissions, isAuth}
 });
 
 export const signIn = (login, password) => {
-    return () => {
+    return (dispatch) => {
         authApi.signIn(login, password);
+        dispatch(setFetching(true))
     }
 };
 export const signUp = (login, password) => {
@@ -49,4 +57,10 @@ export const signUp = (login, password) => {
         authApi.signUp(login, password)
     }
 };
+
+const setFetching = (fetching) => ({
+    type: SET_FETCHING,
+    isFetching: fetching
+});
+
 export default authReducer;

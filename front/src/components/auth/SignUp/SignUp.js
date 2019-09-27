@@ -4,7 +4,7 @@ import {connect} from "react-redux";
 import {NavLink, Redirect} from "react-router-dom";
 import {signUp} from "../../../redux/reducers/authReducer";
 import {maxLengthCreator, minLengthCreator, passwordsMustMatch, requiredField} from "../../../utils/validators";
-import {Input} from "../AuthUtils";
+import {Input} from "../../../utils/FormUtils";
 
 class SignUpForm extends Component {
     render() {
