@@ -1,6 +1,5 @@
 package org.kurento.tutorial.groupcall.websocket.command;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -11,7 +10,6 @@ import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
