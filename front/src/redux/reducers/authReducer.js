@@ -1,6 +1,5 @@
-import {authApi} from '../../kurrento/conferenceroom';
+import {authApi} from "../../api/api";
 
-const SET_FETCHING = 'SET_FETCHING';
 const SET_USER_DATA = 'SET_USER_DATA';
 let initialState = {
     id: null,
@@ -8,7 +7,6 @@ let initialState = {
     token: null,
     permissions: [],
     isAuth: false,
-    isFetching: false
 };
 
 const authReducer = (state = initialState, action) => {
@@ -22,10 +20,6 @@ const authReducer = (state = initialState, action) => {
             stateCopy.permissions = action.payload.permissions;
             break;
         }
-        case SET_FETCHING: {
-            stateCopy.isFetching = action.isFetching;
-            break;
-        }
         default: {
             stateCopy = state;
             break;
@@ -34,12 +28,12 @@ const authReducer = (state = initialState, action) => {
     return stateCopy;
 };
 
-export const setUserData = (id, login, token, permissions, isAuth) => {
+/*export const setUserData = (id, login, token, permissions, isAuth) => {
     return (dispatch) => {
         dispatch(setAuthUserData(id, login, token, permissions, isAuth));
         dispatch(setFetching(false));
     }
-};
+};*/
 
 export const setAuthUserData = (id, login, token, permissions, isAuth) => ({
     type: SET_USER_DATA,
@@ -47,9 +41,8 @@ export const setAuthUserData = (id, login, token, permissions, isAuth) => ({
 });
 
 export const signIn = (login, password) => {
-    return (dispatch) => {
+    return () => {
         authApi.signIn(login, password);
-        dispatch(setFetching(true))
     }
 };
 export const signUp = (login, password) => {
@@ -57,10 +50,10 @@ export const signUp = (login, password) => {
         authApi.signUp(login, password)
     }
 };
-
-const setFetching = (fetching) => ({
-    type: SET_FETCHING,
-    isFetching: fetching
-});
+export const signOut = () => {
+    return (dispatch) => {
+        dispatch(setAuthUserData(null, null, null, [], false));
+    }
+};
 
 export default authReducer;

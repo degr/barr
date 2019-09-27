@@ -23,20 +23,17 @@ class SignUpForm extends Component {
 
                                     <Field className="input100" type="text" name="username"
                                            component={Input}
-                                           textVal='login'
                                            validate={[requiredField, minLength5, maxLength255]}/>
                                 </div>
 
                                 <div className="wrap-input100 validate-input m-b-50" data-validate="Enter password">
                                     <Field className="input100" type="password" name="password"
                                            component={Input}
-                                           textVal='password'
                                            validate={[requiredField, minLength5, maxLength255]}/>
                                 </div>
                                 <div className="wrap-input100 validate-input m-b-50" data-validate="Enter password">
                                     <Field className="input100" type="password" name="confirmPassword"
                                            component={Input}
-                                           textVal='confirm_password'
                                            validate={[requiredField, minLength5, maxLength255, passwordsMustMatch]}/>
                                 </div>
 

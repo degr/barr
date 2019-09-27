@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-import {sendMessage} from "./conferenceroom";
+import {sendMessage} from "./messageHandler";
 
 let PARTICIPANT_MAIN_CLASS = 'participant main';
 let PARTICIPANT_CLASS = 'participant';

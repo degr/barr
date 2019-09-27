@@ -1,14 +1,14 @@
-import {roomApi} from '../../kurrento/conferenceroom';
+import {roomApi} from "../../api/api";
 
 const SET_ROOM_DATA = 'SET_ROOM_DATA';
-const SET_ROOM_USERS = 'SET_ROOM_USERS';
+const SET_ROOM_PARTICIPANTS = 'SET_ROOM_PARTICIPANTS';
 const SET_LOCATION = 'SET_LOCATION';
 let initialState = {
     roomKey: null,
     isPrivate: false,
-    mainUser: null,
-    location: null,
-    users: []
+    mainParticipant: null,
+    participants: [],
+    location: null
 };
 
 const roomReducer = (state = initialState, action) => {
@@ -17,12 +17,11 @@ const roomReducer = (state = initialState, action) => {
         case SET_ROOM_DATA: {
             stateCopy.roomKey = action.payload.roomKey;
             stateCopy.isPrivate = action.payload.isPrivate;
-            stateCopy.users = action.payload.users;
             break;
         }
-        case SET_ROOM_USERS: {
-            stateCopy.mainUser = action.mainUser;
-            [...stateCopy.users] = action.users;
+        case SET_ROOM_PARTICIPANTS: {
+            stateCopy.mainParticipant = action.mainParticipant;
+            [...stateCopy.participants] = action.participants;
             break;
         }
         case SET_LOCATION: {
@@ -41,10 +40,10 @@ export const setRoomData = (roomKey, isPrivate) => ({
     type: SET_ROOM_DATA,
     payload: {roomKey, isPrivate}
 });
-export const setRoomUsers = (mainUser, users) => ({
-    type: SET_ROOM_USERS,
-    mainUser,
-    users
+export const setRoomParticipants = (mainParticipant, participants) => ({
+    type: SET_ROOM_PARTICIPANTS,
+    mainParticipant,
+    participants
 });
 export const setLocation = (location) => ({
     type: SET_LOCATION,

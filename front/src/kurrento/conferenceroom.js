@@ -1,50 +1,15 @@
 import {Participant} from "./Participant";
 import {getStore} from "../index";
-import {setAuthUserData} from "../redux/reducers/authReducer";
-import {setRoomData, setRoomUsers} from "../redux/reducers/roomReducer";
+import {setRoomParticipants} from "../redux/reducers/roomReducer";
+import {closeConnection, sendMessage} from "./messageHandler";
 
 let kurentoUtils = require('kurento-utils');
 
 
-let ws = new WebSocket('wss://localhost/groupcall');
 let participants = {};
 let name;
 
-window.onbeforeunload = function () {
-    ws.close();
-};
-
-ws.onmessage = function (message) {
-    let parsedMessage = JSON.parse(message.data);
-    console.info('Received message: ' + message.data);
-    switch (parsedMessage.id) {
-        case 'existingParticipants':
-            onExistingParticipants(parsedMessage);
-            break;
-        case 'newParticipantArrived':
-            onNewParticipant(parsedMessage);
-            break;
-        case 'participantLeft':
-            onParticipantLeft(parsedMessage);
-            break;
-        case 'receiveVideoAnswer':
-            receiveVideoResponse(parsedMessage);
-            break;
-        case 'iceCandidate':
-            addIceCandidate(parsedMessage);
-            break;
-        case 'signIn':
-            authorize(parsedMessage.payload);
-            break;
-        case 'signUp':
-            authorize(parsedMessage.payload);
-            break;
-        default:
-            console.error('Unrecognized message', parsedMessage);
-    }
-};
-
-function addIceCandidate(parsedMessage) {
+export function addIceCandidate(parsedMessage) {
     participants[parsedMessage.name].rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
         if (error) {
             console.error("Error adding candidate: " + error);
@@ -52,75 +17,20 @@ function addIceCandidate(parsedMessage) {
     });
 }
 
-function authorize(payload) {
-    //TODO
-    /*setUserData(payload.id, payload.login, payload.token, payload.permissions, true);*/
-    getStore().dispatch(setAuthUserData(payload.id, payload.login, payload.token, payload.permissions, true));
-}
-
-export const roomApi = {
-    joinPublicRoom(login, roomKey) {
-        sendMessage({
-            id: 'joinPublicRoom',
-            login: login,
-            roomKey: roomKey
-        });
-        setRoomData(roomKey, false);
-    },
-
-    joinPrivateRoom(login, token, roomKey) {
-        sendMessage({
-            id: 'joinPrivateRoom',
-            login: login,
-            token: token,
-            roomKey: roomKey,
-        });
-        setRoomData(roomKey, true);
-    },
-
-    setRoomDate(roomKey, isPrivate) {
-        getStore().dispatch(setRoomData(roomKey, isPrivate));
-    }
-
-};
-export const authApi = {
-    signIn(login, password) {
-        sendMessage({
-            id: 'signIn',
-            login: login,
-            password: password
-        })
-    },
-
-    signUp(login, password) {
-        sendMessage({
-            id: 'signUp',
-            login: login,
-            password: password
-        })
-    }
-};
-
-function onNewParticipant(parsedMessage) {
+export function onNewParticipant(parsedMessage) {
     receiveVideo(parsedMessage.name);
 }
 
-function receiveVideoResponse(parsedMessage) {
+export function receiveVideoResponse(parsedMessage) {
     participants[parsedMessage.name].rtcPeer.processAnswer(parsedMessage.sdpAnswer, function (error) {
         if (error) return console.error(error);
     });
 }
 
-function onExistingParticipants(parsedMessage) {
+export function onExistingParticipants(parsedMessage) {
     let constraints = {
         audio: true,
-        video: false/*{
-            mandatory : {
-                maxWidth : 320,
-                maxFrameRate : 15,
-                minFrameRate : 15
-            }
-        }*/
+        video: false
     };
     let participant = new Participant(name);
     participants[name] = participant;
@@ -144,10 +54,10 @@ function onExistingParticipants(parsedMessage) {
         });
 
     parsedMessage.data.forEach(receiveVideo);
-    getStore().dispatch(setRoomUsers(name, parsedMessage.data))
+    getStore().dispatch(setRoomParticipants(name, parsedMessage.data))
 }
 
-function leaveRoom() {
+export function leaveRoom() {
     sendMessage({
         id: 'leaveRoom'
     });
@@ -155,11 +65,9 @@ function leaveRoom() {
     for (let key in participants) {
         participants[key].dispose();
     }
-
     document.getElementById('join').style.display = 'block';
     document.getElementById('room').style.display = 'none';
-
-    ws.close();
+    closeConnection();
 }
 
 function receiveVideo(sender) {
@@ -171,13 +79,7 @@ function receiveVideo(sender) {
         remoteVideo: video,
         mediaConstraints: {
             audio: true,
-            video: false/*{
-            mandatory : {
-                maxWidth : 320,
-                maxFrameRate : 15,
-                minFrameRate : 15
-            }
-        }*/
+            video: false
         },
         configuration: {
             iceServers: [{urls: 'turn:134.209.199.255', username: 'test', credential: 'test'}],
@@ -185,7 +87,6 @@ function receiveVideo(sender) {
         },
         onicecandidate: participant.onIceCandidate.bind(participant)
     };
-
     participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
         function (error) {
             if (error) {
@@ -195,15 +96,9 @@ function receiveVideo(sender) {
         });
 }
 
-function onParticipantLeft(parsedMessage) {
+export function onParticipantLeft(parsedMessage) {
     console.log('Participant ' + parsedMessage.name + ' left');
     let participant = participants[parsedMessage.name];
     participant.dispose();
     delete participants[parsedMessage.name];
-}
-
-export function sendMessage(message) {
-    let jsonMessage = JSON.stringify(message);
-    console.log('Senging message: ' + jsonMessage);
-    ws.send(jsonMessage);
 }

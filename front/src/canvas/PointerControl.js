@@ -85,6 +85,9 @@ export default class PointerControl {
                 }
                 this.canJump = false;
                 break;
+            default: {
+                break;
+            }
         }
     };
 
@@ -109,6 +112,9 @@ export default class PointerControl {
             case 68: // d
                 this.moveRight = false;
                 break;
+            default: {
+                break;
+            }
         }
     };
 

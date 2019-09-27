@@ -6,4 +6,4 @@ const CanvasContainer = props => (<Canvas {...props}/>);
 const mapStateToProps = (state) => ({
     location: state.roomPage.location,
 });
-export default connect(mapStateToProps(), {})(CanvasContainer);
+export default connect(mapStateToProps, {})(CanvasContainer);
