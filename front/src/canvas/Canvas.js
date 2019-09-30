@@ -35,7 +35,7 @@ function loadAvatar(path, pos, clb) {
         avatar_pos = pos;
         avatar.position.set(pos["x"], pos["y"], pos["z"]);
         avatar.scale.set(0.1, 0.1, 0.1);
-        avatar.rotateY = Math.PI;
+        avatar.rotateY = pos.a;
         clb(mixer, avatar);
     });
 }
@@ -185,12 +185,15 @@ export default class Canvas extends React.Component {
             let vertices1 = [];
             let vertices2 = [];
             let vertex = new THREE.Vector3();
-            for (i = 0; i < 250; i++) {
+            let setUpVertices = (vertices) => {
                 vertex.x = Math.random() * 2 - 1;
                 vertex.y = Math.random() * 2 - 1;
                 vertex.z = Math.random() * 2 - 1;
                 vertex.multiplyScalar(r);
-                vertices1.push(vertex.x, vertex.y, vertex.z);
+                vertices.push(vertex.x, vertex.y, vertex.z);
+            };
+            for (i = 0; i < 250; i++) {
+                setUpVertices(vertices1);
             }
             for (i = 0; i < 1500; i++) {
                 vertex.x = Math.random() * 2 - 1;
@@ -375,7 +378,7 @@ export default class Canvas extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if (prevProps.location !== this.props.location) {
+        if (prevProps.location !== this.props.location || this.compareParticipantArrays(prevProps.participants, this.props.participants)) {
             if (!this.avatarIsLoaded) {
                 let type = this.props.location.type;
                 let path;
@@ -409,8 +412,72 @@ export default class Canvas extends React.Component {
                     this.avatarIsLoaded = true;
                 });
             }
+            let participantsLocations = this.props.participants.map(item => item.getLocation());
+            participantsLocations.forEach(itemLocation => addAvatar(itemLocation));
             const object = this.props.location;
             this.pointerControl.setPosition(object.x, object.y + 1.5, object.z);
         }
     }
+
+    compareParticipantArrays(prevPropsArray, thisPropsArray) {
+       //TODO create method to compare to array of participants
+        return prevPropsArray.length !== thisPropsArray.length;
+    }
 }
+
+export const addAvatar = (location) => {
+    let type = location.type;
+    let path;
+    switch (type) {
+        case 'bar': {
+            path = pathBarAvatar;
+            break
+        }
+        case 'sofa': {
+            path = pathSofaAvatar;
+            break
+        }
+        case 'table1': {
+            path = pathTableAvatar;
+            break
+        }
+        case 'table2': {
+            path = pathTableAvatar;
+            break
+        }
+        default : {
+            path = pathBarAvatar;
+            break;
+        }
+    }
+    loadAvatar1(path, location, function (mixer, avatar) {
+        scene.add(avatar);
+    });
+
+    function loadAvatar1(path, pos, clb) {
+        loader.load(path, (avatar) => {
+            avatar.traverse((object) => {
+                object.frustumCulled = false;
+            });
+            avatar.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                }
+            });
+            avatar.traverse((node) => {
+                if (node.material) {
+                    node.material.side = THREE.DoubleSide;
+                }
+            });
+
+            const mixer = new THREE.AnimationMixer(avatar);
+            let action = mixer.clipAction(avatar.animations[0]);
+            action.play();
+
+            avatar.position.set(pos["x"], pos["y"], pos["z"]);
+            avatar.scale.set(0.1, 0.1, 0.1);
+            avatar.rotateY = pos.a;
+            clb(mixer, avatar);
+        });
+    }
+};

@@ -1,8 +1,8 @@
 import {sendMessage} from "./messageHandler";
 
-export function Participant(name) {
-    debugger;
+export function Participant(name, location) {
     this.name = name;
+    this.location = location;
     let video = document.createElement('video');
     this.rtcPeer = null;
     video.id = 'video-' + this.name;
@@ -12,9 +12,11 @@ export function Participant(name) {
     this.getVideoElement = function () {
         return video;
     };
+    this.getLocation = function () {
+        return this.location;
+    };
 
     this.offerToReceiveVideo = function (error, offerSdp) {
-        debugger;
         if (error) return console.error("sdp offer error");
         console.log('Invoking SDP offer callback function');
         sendMessage({

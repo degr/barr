@@ -6,7 +6,6 @@ import {closeConnection, sendMessage} from "./messageHandler";
 let kurentoUtils = require('kurento-utils');
 
 export function addIceCandidate(parsedMessage) {
-    debugger;
     let participant = findParticipantByName(parsedMessage.name);
     participant.rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
         if (error) {
@@ -16,11 +15,12 @@ export function addIceCandidate(parsedMessage) {
 }
 
 export function onNewParticipant(parsedMessage) {
-    receiveVideo(parsedMessage.name);
+    let participant = new Participant(parsedMessage.name, parsedMessage.location);
+    dispatch(addParticipant(participant));
+    receiveVideo(participant);
 }
 
 export function receiveVideoResponse(parsedMessage) {
-    debugger;
     let participant = findParticipantByName(parsedMessage.name);
     participant.rtcPeer.processAnswer(parsedMessage.sdpAnswer, function (error) {
         if (error) return console.error(error);
@@ -29,14 +29,14 @@ export function receiveVideoResponse(parsedMessage) {
 
 export function onExistingParticipants(parsedMessage) {
     let name = getStore().getState().authPage.login;
-    dispatch(setRoomParticipants(name, parsedMessage.data));
+    let location = getStore().getState().roomPage.location;
+    let participant = new Participant(name, location);
+    let participants = parsedMessage.data.map(item => new Participant(item.name, item.location));
+    dispatch(setRoomParticipants(participant, participants));
     let constraints = {
         audio: true,
         video: false
     };
-    let participant = new Participant(name);
-    dispatch(addParticipant(participant));
-
     let video = participant.getVideoElement();
 
     let options = {
@@ -56,7 +56,7 @@ export function onExistingParticipants(parsedMessage) {
             this.generateOffer(participant.offerToReceiveVideo.bind(participant));
         });
 
-    parsedMessage.data.forEach(receiveVideo);
+    participants.forEach(receiveVideo);
 }
 
 export function leaveRoom() {
@@ -72,11 +72,8 @@ export function leaveRoom() {
     closeConnection();
 }
 
-function receiveVideo(sender) {
-    let participant = new Participant(sender);
-    dispatch(addParticipant(participant));
+function receiveVideo(participant) {
     let video = participant.getVideoElement();
-
     let options = {
         remoteVideo: video,
         mediaConstraints: {
@@ -99,12 +96,10 @@ function receiveVideo(sender) {
 }
 
 export function onParticipantLeft(parsedMessage) {
-    debugger;
     console.log('Participant ' + parsedMessage.name + ' left');
     let participant = findParticipantByName(parsedMessage.name);
-
-    participant.dispose();
     dispatch(removeParticipant(participant));
+    participant.dispose();
 }
 
 function dispatch(command) {
@@ -112,12 +107,12 @@ function dispatch(command) {
 }
 
 function findParticipantByName(name) {
-    debugger;
     let participants = getParticipants();
-    return participants.find(participant => participant.name === name);
+    let all = [...participants, getStore().getState().roomPage.mainParticipant];
+    return all.find(participant => participant.name === name);
 }
 
 function getParticipants() {
     let roomPage = getStore().getState().roomPage;
-    return [...roomPage.participants];
+    return roomPage.participants;
 }

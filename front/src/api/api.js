@@ -3,20 +3,22 @@ import {sendMessage} from "../kurrento/messageHandler";
 import {setAuthUserData} from "../redux/reducers/authReducer";
 
 export const roomApi = {
-    joinPublicRoom(login, roomKey) {
+    joinPublicRoom(login, roomKey, location) {
         sendMessage({
             id: 'joinPublicRoom',
-            login: login,
-            roomKey: roomKey
+            login,
+            roomKey,
+            location
         });
     },
 
-    joinPrivateRoom(login, token, roomKey) {
+    joinPrivateRoom(login, token, roomKey, location) {
         sendMessage({
             id: 'joinPrivateRoom',
-            login: login,
-            token: token,
-            roomKey: roomKey,
+            login,
+            token,
+            roomKey,
+            location
         });
     },
 

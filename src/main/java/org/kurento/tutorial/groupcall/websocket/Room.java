@@ -37,7 +37,11 @@ public class Room implements Closeable {
     private static final String ID = "id";
     private static final String NAME = "name";
     private static final String DATA = "data";
-    private final Map<String, UserSession> roomParticipantsSessions;
+    private static final String LOCATION = "location";
+    private static final String NEW_PARTICIPANT_ARRIVED_COMMAND = "newParticipantArrived";
+    private static final String PARTICIPANT_LEFT_COMMAND = "participantLeft";
+    private static final String EXISTING_PARTICIPANTS_COMMAND = "existingParticipants";
+    private final Map<SitPosition, UserSession> roomParticipantsSessions;
     @Getter
     private final MediaPipeline mediaPipeline;
 
@@ -53,26 +57,44 @@ public class Room implements Closeable {
         roomParticipantsSessions = new ConcurrentHashMap<>();
     }
 
-    public void join(UserSession participantRoomSession) throws IOException {
+    public void join(SitPosition sitPosition, UserSession participantRoomSession) throws IOException {
         if (roomParticipantsSessions.size() + 1 > participantLimit) {
             throw new IllegalArgumentException("Unable to join room, User overhead. Room limit is " + participantLimit);
         }
-        notifyRoomUsers(participantRoomSession);
-        roomParticipantsSessions.put(participantRoomSession.getLogin(), participantRoomSession);
-        sendParticipantNames(participantRoomSession);
+        notifyRoomUsers(sitPosition, participantRoomSession);
+        putToMap(sitPosition, participantRoomSession);
+        sendParticipant(participantRoomSession);
+    }
+
+    private void putToMap(SitPosition newPosition, UserSession session) {
+        boolean contains = roomParticipantsSessions.containsValue(session);
+        if (contains) {
+            SitPosition oldSitPosition = null;
+            for (Map.Entry<SitPosition, UserSession> sitPositionUserSessionEntry : roomParticipantsSessions.entrySet()) {
+                if (sitPositionUserSessionEntry.getValue().equals(session)) {
+                    oldSitPosition = sitPositionUserSessionEntry.getKey();
+                    break;
+                }
+            }
+            roomParticipantsSessions.remove(oldSitPosition);
+            roomParticipantsSessions.put(newPosition, session);
+        } else {
+            roomParticipantsSessions.put(newPosition, session);
+        }
     }
 
     public void leave(UserSession user) {
         log.debug("PARTICIPANT {}: Leaving room {}", user.getLogin(), this.roomKey);
-
         this.removeParticipant(user.getLogin());
         user.close();
     }
 
-    private void notifyRoomUsers(UserSession newParticipantSession) {
+    private void notifyRoomUsers(SitPosition sitPosition, UserSession newParticipantSession) {
         final JsonObject newParticipantMsg = new JsonObject();
-        newParticipantMsg.addProperty(ID, "newParticipantArrived");
+        JsonElement jsonLocation = getJsonLocation(sitPosition);
+        newParticipantMsg.addProperty(ID, NEW_PARTICIPANT_ARRIVED_COMMAND);
         newParticipantMsg.addProperty(NAME, newParticipantSession.getLogin());
+        newParticipantMsg.add(LOCATION, jsonLocation);
 
         for (final UserSession userSession : roomParticipantsSessions.values()) {
             try {
@@ -84,10 +106,13 @@ public class Room implements Closeable {
     }
 
     private void removeParticipant(String userSessionName) {
-        roomParticipantsSessions.remove(userSessionName);
+        roomParticipantsSessions.values()
+                .removeIf(userSession -> userSession.getLogin().equals(userSessionName));
+
         final JsonObject participantLeftJson = new JsonObject();
 
-        participantLeftJson.addProperty(ID, "participantLeft");
+
+        participantLeftJson.addProperty(ID, PARTICIPANT_LEFT_COMMAND);
         participantLeftJson.addProperty(NAME, userSessionName);
 
         for (final UserSession participant : roomParticipantsSessions.values()) {
@@ -100,19 +125,32 @@ public class Room implements Closeable {
         }
     }
 
-    private void sendParticipantNames(UserSession userSession) throws IOException {
+    private void sendParticipant(UserSession userSession) throws IOException {
         final JsonArray participantsArray = new JsonArray();
-        for (final UserSession participantSession : this.getRoomParticipantsSessions()) {
-            if (!participantSession.equals(userSession)) {
-                final JsonElement participantName = new JsonPrimitive(participantSession.getLogin());
-                participantsArray.add(participantName);
+        for (Map.Entry<SitPosition, UserSession> entry : roomParticipantsSessions.entrySet()) {
+            UserSession value = entry.getValue();
+            if (!value.equals(userSession)) {
+                final JsonElement participantName = new JsonPrimitive(value.getLogin());
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.add(NAME, participantName);
+                jsonObject.add(LOCATION, getJsonLocation(entry.getKey()));
+                participantsArray.add(jsonObject);
             }
         }
         final JsonObject existingParticipantsMsg = new JsonObject();
-        existingParticipantsMsg.addProperty(ID, "existingParticipants");
-
+        existingParticipantsMsg.addProperty(ID, EXISTING_PARTICIPANTS_COMMAND);
         existingParticipantsMsg.add(DATA, participantsArray);
         userSession.sendMessage(existingParticipantsMsg);
+    }
+
+    private JsonElement getJsonLocation(SitPosition sitPosition) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("x", sitPosition.getAxisX());
+        jsonObject.addProperty("y", sitPosition.getAxisY());
+        jsonObject.addProperty("z", sitPosition.getAxisZ());
+        jsonObject.addProperty("a", sitPosition.getRotationAngle());
+        jsonObject.addProperty("type", roomKey);
+        return jsonObject;
     }
 
     public Collection<UserSession> getRoomParticipantsSessions() {

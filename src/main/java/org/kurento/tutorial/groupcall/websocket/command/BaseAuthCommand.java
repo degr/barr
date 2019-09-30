@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.logging.log4j.util.Strings;
-import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.tutorial.groupcall.permissions.dto.UserDTO;
 
 import java.util.Collection;
@@ -41,7 +40,7 @@ abstract class BaseAuthCommand implements RoomCommand {
 
     private JsonObject formJsonResponse(Map<Object, Object> payloadMap) {
         JsonObject payloadObject = new JsonObject();
-        Consumer<String> addToJson = key -> payloadObject.addProperty(key, JsonUtils.toJson(payloadMap.getOrDefault(key, null)));
+        Consumer<String> addToJson = key -> payloadObject.addProperty(key, String.valueOf(payloadMap.getOrDefault(key, null)));
         addToJson.accept(ID);
         addToJson.accept(LOGIN);
         addToJson.accept(TOKEN);

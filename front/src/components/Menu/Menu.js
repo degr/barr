@@ -13,7 +13,7 @@ class Menu extends React.Component {
     render() {
         return (
             <div>
-                <BtnGroupContainer showMap={() => this.setState({showMap: !this.state.showMap, showSignIn: false})}/>
+                <BtnGroupContainer showMap={() => this.setState({showMap: !this.state.showMap})}/>
                 {this.state.showMap ? <PositionMap changePosition={this.changePosition}/> : emptyTag}
             </div>
         )

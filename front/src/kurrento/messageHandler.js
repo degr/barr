@@ -7,7 +7,7 @@ import {
     receiveVideoResponse
 } from "./conferenceroom";
 
-let ws = new WebSocket('wss://localhost/groupcall');
+let ws = new WebSocket('wss://10.10.9.18/groupcall');
 
 window.onbeforeunload = function () {
     ws.close();

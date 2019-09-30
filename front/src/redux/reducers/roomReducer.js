@@ -12,48 +12,47 @@ let initialState = {
     isPrivate: false,
     mainParticipant: null,
     participants: [],
-    location: null
+    location: null,
 };
 
 const roomReducer = (state = initialState, action) => {
-    let stateCopy = {...state};
-
+    let stateCopy = state;
     switch (action.type) {
         case SET_ROOM_DATA: {
-            stateCopy.roomKey = action.payload.roomKey;
-            stateCopy.isPrivate = action.payload.isPrivate;
-            break;
+            return {
+                ...state, roomKey: action.payload.roomKey, isPrivate: action.payload.isPrivate
+            }
         }
         case SET_ROOM_PARTICIPANTS: {
-            stateCopy.mainParticipant = action.mainParticipant;
-            stateCopy.participants = [...action.participants];
-            break;
+            return {
+                ...state, location: action.mainParticipant.location,
+                mainParticipant: action.mainParticipant,
+                participants: [...action.participants]
+            };
         }
         case ADD_PARTICIPANT: {
-            stateCopy.participants = [...state.participants, action.participant];
-            break;
+            return {...state, participants: [...state.participants, action.participant]};
         }
         case UPDATE_PARTICIPANT: {
+            stateCopy = {...state};
             let name = action.participant.name;
             stateCopy.participants[name] = action.participant;
-            break;
+            return stateCopy;
         }
         case REMOVE_PARTICIPANT: {
-            const list = state.participants.filter(item => item.name !== action.participant.name);
-            stateCopy.participants = [...list];
-            break;
+            return {...state, participants: state.participants.filter(item => item.name !== action.participant.name)};
         }
         case RESET_ROOM : {
+            stateCopy = {...state};
             stateCopy.roomKey = null;
             stateCopy.participants = [];
             stateCopy.location = null;
             stateCopy.isPrivate = false;
             stateCopy.mainParticipant = null;
-            break;
+            return stateCopy;
         }
         case SET_LOCATION: {
-            stateCopy.location = action.location;
-            break;
+            return {...state, location: action.location};
         }
         default: {
             stateCopy = state;
@@ -93,8 +92,9 @@ export const setRoom = (payload) => {
         dispatch(resetRoom());
         let roomKey = payload.type;
         dispatch(setRoomData(roomKey, false));
-        dispatch(setLocation(payload.location));
-        dispatch(joinPublicRoom(payload.login, roomKey));
+        let location = payload.location;
+        dispatch(setLocation(location));
+        dispatch(joinPublicRoom(payload.login, roomKey, location));
     }
 };
 const setLocation = (location) => ({
@@ -106,14 +106,14 @@ export const resetRoom = () => ({
     type: RESET_ROOM
 });
 
-export const joinPrivateRoom = (login, token, roomKey) => {
+export const joinPrivateRoom = (login, token, roomKey, location) => {
     return (dispatch) => {
-        roomApi.joinPrivateRoom(login, token, roomKey);
+        roomApi.joinPrivateRoom(login, token, roomKey, location);
     }
 };
-export const joinPublicRoom = (login, roomKey) => {
+export const joinPublicRoom = (login, roomKey, location) => {
     return (dispatch) => {
-        roomApi.joinPublicRoom(login, roomKey);
+        roomApi.joinPublicRoom(login, roomKey, location);
     }
 };
 export default roomReducer;

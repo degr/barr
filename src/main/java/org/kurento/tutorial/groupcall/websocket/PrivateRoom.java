@@ -23,7 +23,7 @@ public class PrivateRoom extends Room {
     }
 
     @Override
-    public void join(UserSession participantRoomSession) throws IOException {
+    public void join(SitPosition sitPosition, UserSession participantRoomSession) throws IOException {
         reentrantLock.lock();
         if (!isSecretValid(participantRoomSession.getRoomKey())) {
             return;
@@ -32,7 +32,7 @@ public class PrivateRoom extends Room {
             return;
         }
         reentrantLock.unlock();
-        super.join(participantRoomSession);
+        super.join(sitPosition, participantRoomSession);
     }
 
     private boolean isSecretValid(String roomKey) {
